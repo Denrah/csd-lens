@@ -108,12 +108,12 @@
         "source": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.facebook.react\\react-native\\0.54.4\\res\\layout\\redbox_item_frame.xml"
     },
     {
-        "merged": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\support_simple_spinner_dropdown_item.xml",
-        "source": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\23.0.1\\res\\layout\\support_simple_spinner_dropdown_item.xml"
-    },
-    {
         "merged": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\list_item.xml",
         "source": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\csdlens\\react-native-image-picker\\unspecified\\res\\layout\\list_item.xml"
+    },
+    {
+        "merged": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\support_simple_spinner_dropdown_item.xml",
+        "source": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\23.0.1\\res\\layout\\support_simple_spinner_dropdown_item.xml"
     },
     {
         "merged": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_activity_chooser_view.xml",
