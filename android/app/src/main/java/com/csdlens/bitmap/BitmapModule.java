@@ -47,13 +47,37 @@ class BitmapModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getPixelRGBAofImage(final String imageName, final int x, final int y, final Callback callback) {
         try {
-            final Bitmap bitmap = loadImage(imageName);
-            int width = bitmap.getWidth();
-            int height = bitmap.getHeight();
-            int[] pixels = new int[height * width];
-            bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-            JSONArray jsonData = new JSONArray(Arrays.asList(pixels));
-            callback.invoke(null, jsonData.toString());
+
+            WritableArray res = new WritableNativeArray();
+            final Bitmap tmp = loadImage(imageName);
+
+            final double MAX_WIDTH = 1000;
+
+            double width = tmp.getWidth();
+            double height = tmp.getHeight();
+
+            if(width > height && width > MAX_WIDTH)
+            {
+                height = height * (MAX_WIDTH / width);
+                width = MAX_WIDTH;
+            }
+            else if(height > MAX_WIDTH)
+            {
+                width = width * (MAX_WIDTH / height);
+                height = MAX_WIDTH;
+            }
+
+            final Bitmap bitmap = Bitmap.createScaledBitmap(loadImage(imageName), (int)width, (int)height, false);
+            /*
+            final Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);*/
+            int[] pixels = new int[bitmap.getHeight() * bitmap.getWidth()];
+            bitmap.getPixels(pixels, 0, (int)width, 0, 0, (int)width, (int)height);
+            /*JSONArray jsonData = new JSONArray(Arrays.asList(pixels));*/
+
+            for(int i = 0; i < bitmap.getHeight() * bitmap.getWidth(); i++)
+                res.pushInt(pixels[i]);
+
+            callback.invoke(null, res);
         } catch (Exception e) {
             callback.invoke(e.getMessage());
         }
@@ -61,6 +85,7 @@ class BitmapModule extends ReactContextBaseJavaModule {
 
     private Bitmap loadImage(final String imageName) throws IOException {
         Bitmap bitmap = BitmapFactory.decodeFile(imageName);
+
         return bitmap;
     }
 }

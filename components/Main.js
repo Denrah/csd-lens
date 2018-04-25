@@ -60,9 +60,10 @@ export default class Main extends React.Component {
 
                 let arr;
                 this.getPixelsArray(response.path).then(res => {
+                   // arr = JSON.parse(res);
+                    //console.log(arr);
                     alert(123);
                 });
-
 
                 // You can also display the image using data:
                 // let source = { uri: 'data:image/jpeg;base64,' + response.data };
