@@ -20,23 +20,47 @@ export default class Main extends React.Component {
         super(props);
         this.state = {
             avatarSource: null,
+            pixels: null,
+            width: null,
+            height: null,
         };
+    }
+
+    async getBase64FromPixels(pixels, width, height) {
+        let res = "";
+
+        await new Promise((resolve, reject) => {
+            NativeModules.Bitmap.getBase64FromPixels(pixels, width, height, (err, data) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(data);
+            });
+        }).then(function (data) {
+            console.log(data);
+        });
+
+        return res;
+    }
+
+    temp() {
+        this.getBase64FromPixels(this.state.pixels, this.state.width, this.state.height);
     }
 
     async getPixelsArray(path) {
         let res = [];
 
+
         await new Promise((resolve, reject) => {
-            NativeModules.Bitmap.getPixelRGBAofImage(path, 0, 0, (err, color) => {
+            NativeModules.Bitmap.getPixelRGBAofImage(path, (err, color, width, height) => {
                 if (err) {
-                    console.log(err);
                     return reject(err);
                 }
-                resolve(color);
-                console.log(color);
+                resolve([color, width, height]);
             });
-        }).then(function (color) {
-            console.log(color);
+        }).then(function (data) {
+            res = data;
+            console.log(data[0], data[1], data[2]);
         });
 
         return res;
@@ -62,6 +86,11 @@ export default class Main extends React.Component {
                 this.getPixelsArray(response.path).then(res => {
                    // arr = JSON.parse(res);
                     //console.log(arr);
+                    this.setState({
+                        pixels: res[0],
+                        width: res[1],
+                        height: res[2]
+                    });
                     alert(123);
                 });
 
@@ -84,6 +113,7 @@ export default class Main extends React.Component {
             <View style={styles.container}>
                 <Image source={this.state.avatarSource} style={styles.uploadAvatar} />
                 <Button title={"Select image"} onPress={this.selectImage.bind(this)}/>
+                <Button title={"Get Base64"} onPress={this.temp.bind(this)}/>
             </View>
         );
     }

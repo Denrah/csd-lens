@@ -12,12 +12,12 @@
         "source": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\23.0.1\\res\\drawable\\abc_item_background_holo_light.xml"
     },
     {
-        "merged": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\abc_textfield_search_material.xml",
-        "source": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\23.0.1\\res\\drawable\\abc_textfield_search_material.xml"
-    },
-    {
         "merged": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\abc_ratingbar_full_material.xml",
         "source": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\23.0.1\\res\\drawable\\abc_ratingbar_full_material.xml"
+    },
+    {
+        "merged": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\abc_textfield_search_material.xml",
+        "source": "D:\\work\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\23.0.1\\res\\drawable\\abc_textfield_search_material.xml"
     },
     {
         "merged": "E:\\work\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\drawable\\abc_item_background_holo_dark.xml",

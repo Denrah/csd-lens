@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Base64;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -17,6 +18,7 @@ import com.facebook.react.bridge.WritableNativeArray;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
@@ -45,7 +47,7 @@ class BitmapModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getPixelRGBAofImage(final String imageName, final int x, final int y, final Callback callback) {
+    public void getPixelRGBAofImage(final String imageName, final Callback callback) {
         try {
 
             WritableArray res = new WritableNativeArray();
@@ -68,16 +70,33 @@ class BitmapModule extends ReactContextBaseJavaModule {
             }
 
             final Bitmap bitmap = Bitmap.createScaledBitmap(loadImage(imageName), (int)width, (int)height, false);
-            /*
-            final Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, width, height, false);*/
+
             int[] pixels = new int[bitmap.getHeight() * bitmap.getWidth()];
             bitmap.getPixels(pixels, 0, (int)width, 0, 0, (int)width, (int)height);
-            /*JSONArray jsonData = new JSONArray(Arrays.asList(pixels));*/
 
             for(int i = 0; i < bitmap.getHeight() * bitmap.getWidth(); i++)
                 res.pushInt(pixels[i]);
 
-            callback.invoke(null, res);
+            callback.invoke(null, res, bitmap.getWidth(), bitmap.getHeight());
+        } catch (Exception e) {
+            callback.invoke(e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void getBase64FromPixels(ReadableArray pixelsData, int width, int height, final Callback callback) {
+        try {
+            int[] pixels = new int[width * height];
+            for(int i = 0; i < width*height; i++)
+                pixels[i] = pixelsData.getInt(i);
+            Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+            Bitmap image = Bitmap.createBitmap(width, height, conf);
+            image.setPixels(pixels, 0, width, 0, 0, width, height);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] b = baos.toByteArray();
+            String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
+            callback.invoke(null, imageEncoded);
         } catch (Exception e) {
             callback.invoke(e.getMessage());
         }
