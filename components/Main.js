@@ -44,7 +44,7 @@ export default class Main extends React.Component {
     }
 
 	RGBToInt(colors){
-		var bin = (colors[3] * 255) << 24 | colors[0] << 16 | colors[1] << 8 | colors[2];
+		var bin = (colors[3]) << 24 | colors[0] << 16 | colors[1] << 8 | colors[2];
 		bin = (function(h){
 			return new Array(33-h.length).join("0")+h
 		})(bin.toString(2));
