@@ -38,17 +38,15 @@ export default class Main extends React.Component {
             });
         }).then(function (data) {
             console.log(data);
+            res = data;
         });
 
         return res;
     }
 
 	RGBToInt(colors){
-		var bin = (colors[3]) << 24 | colors[0] << 16 | colors[1] << 8 | colors[2];
-		bin = (function(h){
-			return new Array(33-h.length).join("0")+h
-		})(bin.toString(2));
-		return parseInt( bin.split('').reverse().join(''), 2 );
+		var bin = ((colors[3] << 24) * 255) | colors[0] << 16 | colors[1] << 8 | colors[2];
+		return bin;
 	}
 	
     toColor(num) {
@@ -99,7 +97,32 @@ export default class Main extends React.Component {
             this.state.pixels[i] = this.RGBToInt(new_colors);
 		}
 		console.log(this.state.pixels);
+        this.getBase64FromPixels(this.state.pixels, this.state.width, this.state.height).then(res => {
+            this.setState({
+                avatarSource:  { uri: 'data:image/jpeg;base64,' + res }
+            });
+        });
 	}
+
+	grayscale() {
+        for(var i = 0; i < this.state.width*this.state.height; i++) {
+            colors = this.toColorArr(this.state.pixels[i]);
+            var new_colors = [];
+            new_colors[0] = (colors[0] + colors[1] + colors[2]) / 3;
+            new_colors[1] = (colors[0] + colors[1] + colors[2]) / 3;
+            new_colors[2] = (colors[0] + colors[1] + colors[2]) / 3;
+            new_colors[3] = colors[3];
+
+            new_colors = this.normalaize_colors(new_colors);
+            this.state.pixels[i] = this.RGBToInt(new_colors);
+        }
+        console.log(this.state.pixels);
+        this.getBase64FromPixels(this.state.pixels, this.state.width, this.state.height).then(res => {
+            this.setState({
+                avatarSource:  { uri: 'data:image/jpeg;base64,' + res }
+            });
+        });
+    }
 
     async getPixelsArray(path) {
         let res = [];
@@ -168,6 +191,7 @@ export default class Main extends React.Component {
                 <Button title={"Select image"} onPress={this.selectImage.bind(this)}/>
                 <Button title={"Get Base64"} onPress={this.temp.bind(this)}/>
 				<Button title={"Set Sepia"} onPress={this.sepia.bind(this)}/>
+                <Button title={"Set Grayscale"} onPress={this.grayscale.bind(this)}/>
             </View>
         );
     }
