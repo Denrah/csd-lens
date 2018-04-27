@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, Text, View, Button, Image} from 'react-native';
 import { NativeModules } from 'react-native';
+import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
 let ImagePicker = require('react-native-image-picker');
 let filters = require('../libs/filters.js');
 let imageUtils = require('../libs/imageUtils.js');
@@ -97,6 +98,26 @@ export default class Editor extends React.Component {
             });
         });
     }
+	
+	async handleCanvas(canvas) {
+		const image = new CanvasImage(canvas);
+		
+		canvas.width = 100;
+		canvas.height = 100;
+		console.log(this.state.imageSource)
+	
+		const ctx = canvas.getContext('2d');
+		const img = new CanvasImage(canvas);
+		
+		image.src = this.state.imageSource;
+		image.addEventListener('load', () => {
+			console.log('image is loaded');
+
+			ctx.drawImage(image, 0, 0, 100, 100);
+			imageData = ctx.getImageData(0, 0, 100, 100);
+			console.log(imageData)
+		});
+	}
 
 
     render() {
@@ -105,6 +126,7 @@ export default class Editor extends React.Component {
                 <Image source={this.state.imageSource} style={styles.uploadAvatar} />
                 <Button title={"Set Sepia"} onPress={this.sepia.bind(this)}/>
                 <Button title={"Set Grayscale"} onPress={this.grayscale.bind(this)}/>
+				<Canvas ref={this.handleCanvas}/>
             </View>
         );
     }
