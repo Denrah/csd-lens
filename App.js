@@ -1,9 +1,11 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import Main from "./components/Main";
+import {StackNavigator} from "react-navigation";
+import Main from './components/Main';
+import Editor from './components/Editor';
 
 
-export default class App extends React.Component {
+class App extends React.Component {
 
     render() {
         return (
@@ -12,3 +14,19 @@ export default class App extends React.Component {
     }
 }
 
+export default StackNavigator(
+    {
+        Main: {
+            screen: App,
+            navigationOptions: ({navigation}) => ({
+
+            }),
+        },
+        Editor: {
+            screen: Editor,
+        }
+    },
+    {
+        initialRouteName: 'Main',
+    }
+);
