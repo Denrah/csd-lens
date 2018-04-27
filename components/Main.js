@@ -35,7 +35,6 @@ export default class Main extends React.Component {
                 console.log('User tapped custom button: ', response.customButton);
             }
             else {
-                console.log(this.props);
                 this.props.navigation.navigate('Editor', {response: response});
             }
         });
@@ -44,7 +43,6 @@ export default class Main extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <Text>CSD Lens</Text>
                 <Button title={"Choose picture"} onPress={this.selectImage.bind(this)}/>
             </View>
         );

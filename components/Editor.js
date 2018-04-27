@@ -20,6 +20,10 @@ let response;
 
 export default class Editor extends React.Component {
 
+	static navigationOptions = {
+		title: 'Edit image',
+	};
+
     constructor(props) {
         super(props);
         this.state = {
@@ -28,13 +32,6 @@ export default class Editor extends React.Component {
             width: null,
             height: null,
         };
-    }
-
-
-
-
-    temp() {
-        imageUtils.getBase64FromPixels(this.state.pixels, this.state.width, this.state.height);
     }
 
     sepia() {
@@ -55,7 +52,7 @@ export default class Editor extends React.Component {
         });
         imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
             this.setState({
-                avatarSource:  { uri: 'data:image/jpeg;base64,' + res }
+                imageSource:  { uri: 'data:image/jpeg;base64,' + res }
             });
         });
     }
@@ -78,17 +75,19 @@ export default class Editor extends React.Component {
         });
         imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
             this.setState({
-                avatarSource:  { uri: 'data:image/jpeg;base64,' + res }
+                imageSource:  { uri: 'data:image/jpeg;base64,' + res }
             });
         });
     }
 
 
+
     componentDidMount() {
         const {params} = this.props.navigation.state;
         response = params.response;
+
         this.setState({
-            imageSource: response.path,
+            imageSource: { uri: response.uri },
         });
         imageUtils.getPixelsArray(response.path).then(res => {
             this.setState({
@@ -104,7 +103,6 @@ export default class Editor extends React.Component {
         return (
             <View style={styles.container}>
                 <Image source={this.state.imageSource} style={styles.uploadAvatar} />
-                <Button title={"Get Base64"} onPress={this.temp.bind(this)}/>
                 <Button title={"Set Sepia"} onPress={this.sepia.bind(this)}/>
                 <Button title={"Set Grayscale"} onPress={this.grayscale.bind(this)}/>
             </View>

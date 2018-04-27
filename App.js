@@ -7,9 +7,13 @@ import Editor from './components/Editor';
 
 class App extends React.Component {
 
+	static navigationOptions = {
+		title: 'CSD Lens',
+	};
+
     render() {
         return (
-            <Main/>
+            <Main navigation={this.props.navigation} />
         );
     }
 }
@@ -18,9 +22,6 @@ export default StackNavigator(
     {
         Main: {
             screen: App,
-            navigationOptions: ({navigation}) => ({
-
-            }),
         },
         Editor: {
             screen: Editor,
