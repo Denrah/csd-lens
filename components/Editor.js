@@ -39,6 +39,7 @@ export default class Editor extends React.Component {
         this.state = {
             imageSource: null,
             pixels: null,
+            basePixels: null,
             width: null,
             height: null,
 			canvas: null,
@@ -52,7 +53,7 @@ export default class Editor extends React.Component {
         }, () => {
             let new_pixels = [];
             for(let i = 0; i < this.state.width*this.state.height; i++) {
-                colors = imageUtils.toColorArr(this.state.pixels[i]);
+                colors = imageUtils.toColorArr(this.state.basePixels[i]);
                 let new_colors = [];
                 new_colors[0] = (colors[0] * 0.393) + (colors[1] * 0.769) + (colors[2] * 0.189);
                 new_colors[1] = (colors[0] * 0.349) + (colors[1] * 0.686) + (colors[2] * 0.168);
@@ -80,7 +81,7 @@ export default class Editor extends React.Component {
         }, () => {
             let new_pixels = [];
             for(let i = 0; i < this.state.width*this.state.height; i++) {
-                colors = imageUtils.toColorArr(this.state.pixels[i]);
+                colors = imageUtils.toColorArr(this.state.basePixels[i]);
                 let new_colors = [];
                 new_colors[0] = (colors[0] + colors[1] + colors[2]) / 3;
                 new_colors[1] = (colors[0] + colors[1] + colors[2]) / 3;
@@ -109,7 +110,7 @@ export default class Editor extends React.Component {
             let threshold = 130;
             let new_pixels = [];
             for(let i = 0; i < this.state.width*this.state.height; i++) {
-                colors = imageUtils.toColorArr(this.state.pixels[i]);
+                colors = imageUtils.toColorArr(this.state.basePixels[i]);
                 let new_colors = [];
                 let v = (0.2126*colors[0] + 0.7152*colors[1] + 0.0722*colors[2] >= threshold) ? 255 : 0;
                 new_colors[0] = v;
@@ -144,6 +145,7 @@ export default class Editor extends React.Component {
         imageUtils.getPixelsArray(response.path).then(res => {
             this.setState({
                 pixels: res[0],
+                basePixels: res[0],
                 width: res[1],
                 height: res[2]
             });

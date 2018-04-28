@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Text, View, Button, Image} from 'react-native';
+import {StyleSheet, Text, View, Button, Image, ProgressBarAndroid} from 'react-native';
 import {StackNavigator} from 'react-navigation';
 
 let ImagePicker = require('react-native-image-picker');
@@ -12,10 +12,15 @@ let options = {
     }
 };
 
+let loadingBar = <ProgressBarAndroid styleAttr="Inverse" />;
+
 export default class Main extends React.Component {
 
     constructor(props) {
         super(props);
+        this.state = {
+            loadingBar: null
+        };
     }
 
     componentDidMount() {
@@ -23,6 +28,9 @@ export default class Main extends React.Component {
     }
 
     selectImage() {
+        this.setState({
+            loadingBar: loadingBar
+        });
         ImagePicker.showImagePicker(options, (response) => {
 
             if (response.didCancel) {
@@ -44,6 +52,7 @@ export default class Main extends React.Component {
         return (
             <View style={styles.container}>
                 <Button title={"Choose picture"} onPress={this.selectImage.bind(this)}/>
+                {this.state.loadingBar}
             </View>
         );
     }
