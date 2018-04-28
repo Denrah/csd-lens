@@ -58,7 +58,7 @@ class BitmapModule extends ReactContextBaseJavaModule {
             double width = tmp.getWidth();
             double height = tmp.getHeight();
 
-            if(width > height && width > MAX_WIDTH)
+           /* if(width > height && width > MAX_WIDTH)
             {
                 height = height * (MAX_WIDTH / width);
                 width = MAX_WIDTH;
@@ -69,7 +69,9 @@ class BitmapModule extends ReactContextBaseJavaModule {
                 height = MAX_WIDTH;
             }
 
-            final Bitmap bitmap = Bitmap.createScaledBitmap(loadImage(imageName), (int)width, (int)height, false);
+            final Bitmap bitmap = Bitmap.createScaledBitmap(loadImage(imageName), (int)width, (int)height, false);*/
+			
+			final Bitmap bitmap = tmp;
 
             int[] pixels = new int[bitmap.getHeight() * bitmap.getWidth()];
             bitmap.getPixels(pixels, 0, (int)width, 0, 0, (int)width, (int)height);
@@ -101,9 +103,38 @@ class BitmapModule extends ReactContextBaseJavaModule {
             callback.invoke(e.getMessage());
         }
     }
+	
+	private int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+
+		final int height = options.outHeight;
+		final int width = options.outWidth;
+		int inSampleSize = 1;
+
+		if (height > reqHeight || width > reqWidth) {
+
+			final int halfHeight = height / 2;
+			final int halfWidth = width / 2;
+
+			while ((halfHeight / inSampleSize) >= reqHeight
+					&& (halfWidth / inSampleSize) >= reqWidth) {
+				inSampleSize *= 2;
+			}
+		}
+
+		return inSampleSize;
+	}
 
     private Bitmap loadImage(final String imageName) throws IOException {
-        Bitmap bitmap = BitmapFactory.decodeFile(imageName);
+		
+		final BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		BitmapFactory.decodeFile(imageName, options);
+		
+		options.inSampleSize = calculateInSampleSize(options, 500, 500);
+
+		options.inJustDecodeBounds = false;
+        Bitmap bitmap = BitmapFactory.decodeFile(imageName, options);
 
         return bitmap;
     }
