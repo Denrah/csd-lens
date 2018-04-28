@@ -9,6 +9,14 @@ class App extends React.Component {
 
 	static navigationOptions = {
 		title: 'CSD Lens',
+        headerStyle: {
+            backgroundColor: '#000',
+            height: 40,
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+            fontWeight: 'bold',
+        },
 	};
 
     render() {
