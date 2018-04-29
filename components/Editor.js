@@ -8,25 +8,16 @@ import {
     ProgressBarAndroid,
     Image,
     TouchableOpacity,
-    ScrollView
+    ScrollView,
+	Slider
 } from 'react-native';
 import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
 import FiltersBar from "./FiltersBar";
+import SizeAndRot from "./SizeAndRot";
 
 
 let filters = require('../libs/filters.js');
 let imageUtils = require('../libs/imageUtils.js');
-
-let options = {
-    title: 'Select image',
-    customButtons: [
-        {name: 'fb', title: 'Choose Photo from Facebook'},
-    ],
-    storageOptions: {
-        skipBackup: true,
-        path: 'images'
-    }
-};
 
 let response;
 let loadingBar = <ProgressBarAndroid styleAttr="Inverse"/>;
@@ -54,8 +45,11 @@ export default class Editor extends React.Component {
             width: null,
             height: null,
             canvas: null,
-            loadingBar: null
+            loadingBar: null,
+			rotationValue: null,
+			currentPanel: null,
         };
+		this.choosePanel = this.choosePanel.bind(this);
     }
 
     sepia() {
@@ -246,7 +240,7 @@ export default class Editor extends React.Component {
     }
 	
 	rotate() {
-		let angle = 45;
+		let angle = -45;
 		this.setState({
             loadingBar: loadingBar
         }, () => {
@@ -260,56 +254,10 @@ export default class Editor extends React.Component {
 				let npY = parseInt(Math.sin(angle)*pX + Math.cos(angle)*pY) + parseInt(this.state.height/2);
 				let newPix = npY * this.state.width + npX;
 				if(npX >= 0 && npX < this.state.width && npY >= 0 && npY < this.state.height)
-					new_pixels[newPix] = this.state.pixels[i];
+					new_pixels[i] = this.state.pixels[newPix];
+				else
+					new_pixels[i] = -1;
             }
-			for (let i = 0; i < this.state.width * this.state.height; i++)
-			{
-				if(new_pixels[i] == -1)
-				{
-					let pX = i % this.state.width;
-					let pY = parseInt(i / this.state.width);
-					let middle_val = new Array(4);
-					middle_val.fill(0);
-					let counter = 0;
-					if(pX > 0)
-					{
-						colors = imageUtils.toColorArr(this.state.pixels[i-1]);
-						middle_val[0] += colors[0];
-						middle_val[1] += colors[1];
-						middle_val[2] += colors[2];
-						counter++;
-					}
-					if(pY < this.state.height-1)
-					{
-						colors = imageUtils.toColorArr(this.state.pixels[i+this.state.height]);
-						middle_val[0] += colors[0];
-						middle_val[1] += colors[1];
-						middle_val[2] += colors[2];
-						counter++;
-					}
-					if(pX < this.state.width-1)
-					{
-						colors = imageUtils.toColorArr(this.state.pixels[i+1]);
-						middle_val[0] += colors[0];
-						middle_val[1] += colors[1];
-						middle_val[2] += colors[2];
-						counter++;
-					}
-					if(pY > 0)
-					{
-						colors = imageUtils.toColorArr(this.state.pixels[i-this.state.width]);
-						middle_val[0] += colors[0];
-						middle_val[1] += colors[1];
-						middle_val[2] += colors[2];
-						counter++;
-					}
-					middle_val[0] /= counter;
-					middle_val[1] /= counter;
-					middle_val[2] /= counter;
-					middle_val[3] = colors[3];
-					new_pixels[i] = imageUtils.RGBToInt(middle_val);
-				}
-			}
             this.setState({
                 pixels: new_pixels
             });
@@ -324,6 +272,7 @@ export default class Editor extends React.Component {
 
 
     componentDidMount() {
+		this.choosePanel("filter");
         const {params} = this.props.navigation.state;
         response = params.response;
 
@@ -369,8 +318,47 @@ export default class Editor extends React.Component {
         });
     }*/
 
+	filterCallback(val) {
+		switch(val) {
+			case "gray":
+				this.grayscale();
+				break;
+			case "sepia":
+				this.sepia();
+				break;
+			case "noir":
+				this.threshold();
+				break;
+			case "sharp":
+				this.sharp();
+				break;
+			case "back":
+				this.invert();
+				break;
+			case "norm":
+				this.norm();
+				break;
+			
+			
+		}
+	}
 
-
+	choosePanel(panel) {
+		switch(panel) {
+			case "filter":
+				this.setState({
+					currentPanel: <FiltersBar callbackFunction={this.filterCallback.bind(this)}/>
+				});
+				break;
+			case "size":
+				this.setState({
+					currentPanel: <SizeAndRot/>
+				});
+				break;
+				
+		}
+	}
+	
     render() {
         return (
             <View style={styles.container}>
@@ -380,86 +368,13 @@ export default class Editor extends React.Component {
                     </ImageBackground>
                 </View>
                 <View style={styles.editPanel}>
-                    <ScrollView horizontal={true} style={{paddingTop: 15,
-                        paddingLeft: 15,
-                        paddingRight: 15}}>
-                        <TouchableOpacity onPress={this.grayscale.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/gray.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>GRAY</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.sepia.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/sepia.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 1)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>SEPIA</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.threshold.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/threshold.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>NOIR</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.sharp.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/sharp.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>SHARP</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.invert.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/invert.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>BACK</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.norm.bind(this)} style={{marginRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center', marginRight: 15,
-                            }} source={require('../assets/filters/norm.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>NORM</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                    </ScrollView>
+                    {this.state.currentPanel}
                 </View>
                 <View style={styles.bottomBar}>
-                    <Text style={{color: "#00CF68", fontSize: 16}}>FILTER</Text>
-					<TouchableOpacity onPress={this.rotate.bind(this)}>
+					<TouchableOpacity onPress={() => this.choosePanel("filter")}>
+						<Text style={{color: "#00CF68", fontSize: 16}}>FILTER</Text>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={() => this.choosePanel("size")}>
 						<Text style={{color: "white", fontSize: 16}}>SIZE&ROT</Text>
 					</TouchableOpacity>
                     <Text style={{color: "white", fontSize: 16}}>FILTER</Text>
