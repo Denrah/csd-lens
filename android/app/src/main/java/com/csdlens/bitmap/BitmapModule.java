@@ -51,14 +51,14 @@ class BitmapModule extends ReactContextBaseJavaModule {
         try {
 
             WritableArray res = new WritableNativeArray();
-            /*final Bitmap tmp = loadImage(imageName);
+            final Bitmap tmp = loadImage(imageName);
 
             final double MAX_WIDTH = 1000;
 
             double width = tmp.getWidth();
             double height = tmp.getHeight();
 
-            if(width > height && width > MAX_WIDTH)
+           /* if(width > height && width > MAX_WIDTH)
             {
                 height = height * (MAX_WIDTH / width);
                 width = MAX_WIDTH;
@@ -69,7 +69,7 @@ class BitmapModule extends ReactContextBaseJavaModule {
                 height = MAX_WIDTH;
             }
 
-            final Bitmap bitmap = Bitmap.createScaledBitmap(loadImage(imageName), (int)width, (int)height, false);
+            final Bitmap bitmap = Bitmap.createScaledBitmap(loadImage(imageName), (int)width, (int)height, false);*/
 			
 			final Bitmap bitmap = tmp;
 
@@ -77,15 +77,7 @@ class BitmapModule extends ReactContextBaseJavaModule {
             bitmap.getPixels(pixels, 0, (int)width, 0, 0, (int)width, (int)height);
 
             for(int i = 0; i < bitmap.getHeight() * bitmap.getWidth(); i++)
-                res.pushInt(pixels[i]);*/
-				
-			Bitmap bitmap = loadImage(imageName);
-			//bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos);
-			int[] pixels = new int[bitmap.getHeight() * bitmap.getWidth()];
-            bitmap.getPixels(pixels, 0, (int)bitmap.getWidth(), 0, 0, (int)bitmap.getWidth(), (int)bitmap.getHeight());
-			for(int i = 0; i < pixels.length; i++)
-				res.pushInt(pixels[i]);
-			bitmap.recycle();
+                res.pushInt(pixels[i]);
 
             callback.invoke(null, res, bitmap.getWidth(), bitmap.getHeight());
         } catch (Exception e) {
