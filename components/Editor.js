@@ -171,6 +171,66 @@ export default class Editor extends React.Component {
             });
         });
     }
+	
+	resize() {
+        this.setState({
+            loadingBar: loadingBar
+        }, () => {
+			
+			let w_result = parseInt(this.state.width/100*50);
+			let h_result = parseInt(this.state.height/100*50);
+			
+			let new_pixels = new Array(w_result * h_result);
+			
+			let e1, e2, e3, e4, x, y, index;
+			let x_ratio = parseFloat(this.state.width-1/w_result);
+			let y_ratio = parseFloat(this.state.height-1/h_result);
+			let x_diff, y_diff;
+			let offset = 0 ;
+			for (let i = 0; i < h_result; i++) {
+				for (let j = 0; j < w_result; j++) {
+					
+					x = parseInt(x_ratio * j);
+					y = parseInt(y_ratio * i);
+					x_diff = parseFloat((x_ratio * j) - x);
+					y_diff = parseFloat((y_ratio * i) - y);
+					index = y*this.state.width+x;
+					
+					e1 = index;
+					e2 = index + 1;
+					e3 = index + this.state.width;
+					e4 = index + this.state.width+1;
+					
+					let rgba = new Array(4);
+					
+					for (let ri=0; ri < 2; ri++) {
+						rgba[ri] = imageUtils.toColorArr(this.state.basePixels[e1])[ri]*(1-x_diff)*(1-y_diff) + imageUtils.toColorArr(this.state.basePixels[e2])[ri]*(x_diff)*(1-y_diff) + imageUtils.toColorArr(this.state.basePixels[e3])[ri]*(y_diff)*(1-x_diff) + imageUtils.toColorArr(this.state.basePixels[e4])[ri]*(x_diff*y_diff);
+					}
+					
+					
+					rgba[3] = imageUtils.toColorArr(this.state.basePixels[e1])[3];
+					
+
+					
+					new_pixels[offset++] = imageUtils.RGBToInt(imageUtils.normalaizeColors(rgba));
+				}
+			}
+			console.log(w_result);
+			console.log(h_result);
+			console.log(new_pixels);
+						
+			this.setState({
+                pixels: new_pixels
+            });
+			
+            imageUtils.getBase64FromPixels(new_pixels, w_result, h_result).then(res => {				
+                this.setState({
+                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                    loadingBar: null
+                });
+            });			
+        });
+    }
 
     norm() {
         this.setState({
@@ -454,6 +514,13 @@ export default class Editor extends React.Component {
                                     textShadowRadius: 5
                                 }}>NORM</Text>
                             </ImageBackground>
+                        </TouchableOpacity>
+						<TouchableOpacity onPress={this.resize.bind(this)} style={{marginRight: 15}}>                       
+							<Text style={{
+								color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
+								textShadowOffset: {width: -1, height: 1},
+								textShadowRadius: 5
+							}}>Resize 50%</Text>
                         </TouchableOpacity>
                     </ScrollView>
                 </View>
