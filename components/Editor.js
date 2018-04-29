@@ -244,6 +244,83 @@ export default class Editor extends React.Component {
             });
         });
     }
+	
+	rotate() {
+		let angle = 45;
+		this.setState({
+            loadingBar: loadingBar
+        }, () => {
+            let new_pixels = new Array(this.state.width * this.state.height);
+			new_pixels.fill(-1);
+			console.log(new_pixels);
+            for (let i = 0; i < this.state.width * this.state.height; i++) {
+                let pX = i % this.state.width - parseInt(this.state.width/2);
+				let pY = parseInt(i / this.state.width) - parseInt(this.state.height/2);
+				let npX = parseInt(Math.cos(angle)*pX - Math.sin(angle)*pY) + parseInt(this.state.width/2);
+				let npY = parseInt(Math.sin(angle)*pX + Math.cos(angle)*pY) + parseInt(this.state.height/2);
+				let newPix = npY * this.state.width + npX;
+				if(npX >= 0 && npX < this.state.width && npY >= 0 && npY < this.state.height)
+					new_pixels[newPix] = this.state.pixels[i];
+            }
+			for (let i = 0; i < this.state.width * this.state.height; i++)
+			{
+				if(new_pixels[i] == -1)
+				{
+					let pX = i % this.state.width;
+					let pY = parseInt(i / this.state.width);
+					let middle_val = new Array(4);
+					middle_val.fill(0);
+					let counter = 0;
+					if(pX > 0)
+					{
+						colors = imageUtils.toColorArr(this.state.pixels[i-1]);
+						middle_val[0] += colors[0];
+						middle_val[1] += colors[1];
+						middle_val[2] += colors[2];
+						counter++;
+					}
+					if(pY < this.state.height-1)
+					{
+						colors = imageUtils.toColorArr(this.state.pixels[i+this.state.height]);
+						middle_val[0] += colors[0];
+						middle_val[1] += colors[1];
+						middle_val[2] += colors[2];
+						counter++;
+					}
+					if(pX < this.state.width-1)
+					{
+						colors = imageUtils.toColorArr(this.state.pixels[i+1]);
+						middle_val[0] += colors[0];
+						middle_val[1] += colors[1];
+						middle_val[2] += colors[2];
+						counter++;
+					}
+					if(pY > 0)
+					{
+						colors = imageUtils.toColorArr(this.state.pixels[i-this.state.width]);
+						middle_val[0] += colors[0];
+						middle_val[1] += colors[1];
+						middle_val[2] += colors[2];
+						counter++;
+					}
+					middle_val[0] /= counter;
+					middle_val[1] /= counter;
+					middle_val[2] /= counter;
+					middle_val[3] = colors[3];
+					new_pixels[i] = imageUtils.RGBToInt(middle_val);
+				}
+			}
+            this.setState({
+                pixels: new_pixels
+            });
+            imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+                this.setState({
+                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                    loadingBar: null
+                });
+            });
+        });
+	}
 
 
     componentDidMount() {
@@ -253,7 +330,9 @@ export default class Editor extends React.Component {
         this.setState({
             loadingBar: loadingBar
         });
+		console.log(123);
         imageUtils.getPixelsArray(response.path).then(res => {
+			console.log(res);
             this.setState({
                 pixels: res[0],
                 basePixels: res[0],
@@ -380,7 +459,9 @@ export default class Editor extends React.Component {
                 </View>
                 <View style={styles.bottomBar}>
                     <Text style={{color: "#00CF68", fontSize: 16}}>FILTER</Text>
-                    <Text style={{color: "white", fontSize: 16}}>SIZE&ROT</Text>
+					<TouchableOpacity onPress={this.rotate.bind(this)}>
+						<Text style={{color: "white", fontSize: 16}}>SIZE&ROT</Text>
+					</TouchableOpacity>
                     <Text style={{color: "white", fontSize: 16}}>FILTER</Text>
                 </View>
             </View>
