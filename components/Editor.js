@@ -428,82 +428,6 @@ export default class Editor extends React.Component {
                     </ImageBackground>
                 </View>
                 <View style={styles.editPanel}>
-<<<<<<< HEAD
-                    <ScrollView horizontal={true} style={{paddingTop: 15,
-                        paddingLeft: 15,
-                        paddingRight: 15}}>
-                        <TouchableOpacity onPress={this.grayscale.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/gray.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>GRAY</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.sepia.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/sepia.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 1)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>SEPIA</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.threshold.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/threshold.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>NOIR</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.sharp.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/sharp.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>SHARP</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.invert.bind(this)} style={{paddingRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center',
-                            }} source={require('../assets/filters/invert.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>BACK</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={this.norm.bind(this)} style={{marginRight: 15}}>
-                            <ImageBackground style={{
-                                width: 70, height: 70, alignItems: 'center',
-                                justifyContent: 'center', marginRight: 15,
-                            }} source={require('../assets/filters/norm.png')}>
-                                <Text style={{
-                                    color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                                    textShadowOffset: {width: -1, height: 1},
-                                    textShadowRadius: 5
-                                }}>NORM</Text>
-                            </ImageBackground>
-                        </TouchableOpacity>
 						<TouchableOpacity onPress={this.resize.bind(this)} style={{marginRight: 15}}>                       
 							<Text style={{
 								color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
@@ -511,10 +435,8 @@ export default class Editor extends React.Component {
 								textShadowRadius: 5
 							}}>Resize 50%</Text>
                         </TouchableOpacity>
-                    </ScrollView>
-=======
+
                     {this.state.currentPanel}
->>>>>>> 03810cd75941ecfe8e1b5275e79d9e52aca421ab
                 </View>
                 <View style={styles.bottomBar}>
 					<TouchableOpacity onPress={() => this.choosePanel("filter")}>
