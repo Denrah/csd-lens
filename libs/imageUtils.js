@@ -80,6 +80,8 @@ let normalaizeColors = function(colors) {
     for(let i = 0; i < 4; i++) {
         if (colors[i] > 255)
             colors[i] = 255;
+        if (colors[i] < 0)
+            colors[i] = 0;
         colors[i] = parseInt(colors[i]);
     }
     return colors;

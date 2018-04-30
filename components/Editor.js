@@ -48,6 +48,10 @@ export default class Editor extends React.Component {
             loadingBar: null,
 			rotationValue: null,
 			currentPanel: null,
+            navigationColors: {
+                filters: "#00CF68",
+                sizeAndRot: "white"
+            }
         };
 		this.choosePanel = this.choosePanel.bind(this);
     }
@@ -243,48 +247,38 @@ export default class Editor extends React.Component {
         });
     }
 
-    sharp() {
+    convolution(weights) {
         this.setState({
             loadingBar: loadingBar
         }, () => {
+            let side = Math.round(Math.sqrt(weights.length));
+            let halfSide = Math.floor(side / 2);
             let new_pixels = [];
-            for (let i = 0; i < this.state.width * this.state.height; i++) {
-                colors = imageUtils.toColorArr(this.state.basePixels[i]);
-
-                new_red = colors[0] * 5;
-                new_green = colors[1] * 5;
-                new_blue = colors[2] * 5;
-
-                if (i % (this.state.width + 1) > 0) {
-                    new_red -= imageUtils.toColorArr(this.state.basePixels[i - 1])[0];
-                    new_green -= imageUtils.toColorArr(this.state.basePixels[i - 1])[1];
-                    new_blue -= imageUtils.toColorArr(this.state.basePixels[i - 1])[2];
+            for (let y = 0; y < this.state.height; y++)
+            {
+                for(let x = 0; x < this.state.width; x++)
+                {
+                    let r=0, g=0, b=0, a=0;
+                    for (let cy=0; cy<side; cy++)
+                    {
+                        for (let cx = 0; cx < side; cx++)
+                        {
+                            let scy = y + cy - halfSide;
+                            let scx = x + cx - halfSide;
+                            if (scy >= 0 && scy < this.state.height && scx >= 0 && scx < this.state.width) {
+                                let srcOff = (scy*this.state.width+scx);
+                                let wt = weights[cy*side+cx];
+                                r += imageUtils.toColorArr(this.state.basePixels[srcOff])[0] * wt;
+                                g += imageUtils.toColorArr(this.state.basePixels[srcOff])[1] * wt;
+                                b += imageUtils.toColorArr(this.state.basePixels[srcOff])[2] * wt;
+                                a += imageUtils.toColorArr(this.state.basePixels[srcOff])[3];
+                            }
+                        }
+                    }
+                    let new_colors = [r, g, b, a];
+                    new_colors = imageUtils.normalaizeColors(new_colors);
+                    new_pixels[y*this.state.width+x] = imageUtils.RGBToInt(new_colors);
                 }
-                if (i % (this.state.width + 1) < this.state.width) {
-                    new_red -= imageUtils.toColorArr(this.state.basePixels[i + 1])[0];
-                    new_green -= imageUtils.toColorArr(this.state.basePixels[i + 1])[1];
-                    new_blue -= imageUtils.toColorArr(this.state.basePixels[i + 1])[2];
-                }
-                if (i >= this.state.width) {
-                    new_red -= imageUtils.toColorArr(this.state.basePixels[i - this.state.width])[0];
-                    new_green -= imageUtils.toColorArr(this.state.basePixels[i - this.state.width])[1];
-                    new_blue -= imageUtils.toColorArr(this.state.basePixels[i - this.state.width])[2];
-                }
-                if (i <= this.state.width * this.state.height - this.state.width) {
-                    new_red -= imageUtils.toColorArr(this.state.basePixels[i + this.state.width])[0];
-                    new_green -= imageUtils.toColorArr(this.state.basePixels[i + this.state.width])[1];
-                    new_blue -= imageUtils.toColorArr(this.state.basePixels[i + this.state.width])[2];
-                }
-
-
-                let new_colors = [];
-                new_colors[0] = new_red;
-                new_colors[1] = new_green;
-                new_colors[2] = new_blue;
-                new_colors[3] = colors[3];
-
-                new_colors = imageUtils.normalaizeColors(new_colors);
-                new_pixels[i] = imageUtils.RGBToInt(new_colors);
             }
 
             this.setState({
@@ -299,14 +293,13 @@ export default class Editor extends React.Component {
         });
     }
 	
-	rotate() {
-		let angle = -45;
+	rotate(angle) {
+		angle = -angle * (Math.PI / 180);
 		this.setState({
             loadingBar: loadingBar
         }, () => {
             let new_pixels = new Array(this.state.width * this.state.height);
 			new_pixels.fill(-1);
-			console.log(new_pixels);
             for (let i = 0; i < this.state.width * this.state.height; i++) {
                 let pX = i % this.state.width - parseInt(this.state.width/2);
 				let pY = parseInt(i / this.state.width) - parseInt(this.state.height/2);
@@ -314,14 +307,44 @@ export default class Editor extends React.Component {
 				let npY = parseInt(Math.sin(angle)*pX + Math.cos(angle)*pY) + parseInt(this.state.height/2);
 				let newPix = npY * this.state.width + npX;
 				if(npX >= 0 && npX < this.state.width && npY >= 0 && npY < this.state.height)
-					new_pixels[i] = this.state.pixels[newPix];
+					new_pixels[i] = this.state.basePixels[newPix];
 				else
 					new_pixels[i] = -1;
             }
+            let weights = [1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9];
+            let new_pixels_filter = [];
+            let side = Math.round(Math.sqrt(weights.length));
+            let halfSide = Math.floor(side / 2);
+            for (let y = 0; y < this.state.height; y++)
+            {
+                for(let x = 0; x < this.state.width; x++)
+                {
+                    let r=0, g=0, b=0, a=0;
+                    for (let cy=0; cy<side; cy++)
+                    {
+                        for (let cx = 0; cx < side; cx++)
+                        {
+                            let scy = y + cy - halfSide;
+                            let scx = x + cx - halfSide;
+                            if (scy >= 0 && scy < this.state.height && scx >= 0 && scx < this.state.width) {
+                                let srcOff = (scy*this.state.width+scx);
+                                let wt = weights[cy*side+cx];
+                                r += imageUtils.toColorArr(new_pixels[srcOff])[0] * wt;
+                                g += imageUtils.toColorArr(new_pixels[srcOff])[1] * wt;
+                                b += imageUtils.toColorArr(new_pixels[srcOff])[2] * wt;
+                                a += imageUtils.toColorArr(new_pixels[srcOff])[3];
+                            }
+                        }
+                    }
+                    let new_colors = [r, g, b, a];
+                    new_colors = imageUtils.normalaizeColors(new_colors);
+                    new_pixels_filter[y*this.state.width+x] = imageUtils.RGBToInt(new_colors);
+                }
+            }
             this.setState({
-                pixels: new_pixels
+                pixels: new_pixels_filter
             });
-            imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+            imageUtils.getBase64FromPixels(new_pixels_filter, this.state.width, this.state.height).then(res => {
                 this.setState({
                     imageSource: {uri: 'data:image/jpeg;base64,' + res},
                     loadingBar: null
@@ -339,9 +362,7 @@ export default class Editor extends React.Component {
         this.setState({
             loadingBar: loadingBar
         });
-		console.log(123);
         imageUtils.getPixelsArray(response.path).then(res => {
-			console.log(res);
             this.setState({
                 pixels: res[0],
                 basePixels: res[0],
@@ -390,7 +411,9 @@ export default class Editor extends React.Component {
 				this.threshold();
 				break;
 			case "sharp":
-				this.sharp();
+				this.convolution([-1, -1, -1,
+                    -1, 9, -1,
+                    -1, -1, -1]);
 				break;
 			case "back":
 				this.invert();
@@ -403,16 +426,32 @@ export default class Editor extends React.Component {
 		}
 	}
 
+	sizeAndRotCallback(size, rot) {
+        this.setState({
+            loadingBar: loadingBar
+        }, () => {
+            this.rotate(rot);
+        });
+    }
+
 	choosePanel(panel) {
 		switch(panel) {
 			case "filter":
 				this.setState({
-					currentPanel: <FiltersBar callbackFunction={this.filterCallback.bind(this)}/>
+					currentPanel: <FiltersBar callbackFunction={this.filterCallback.bind(this)}/>,
+                    navigationColors: {
+					    filters: "#00CF68",
+                        sizeAndRot: "white"
+                    }
 				});
 				break;
 			case "size":
 				this.setState({
-					currentPanel: <SizeAndRot/>
+					currentPanel: <SizeAndRot callbackFunction={this.sizeAndRotCallback.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "#00CF68"
+                    }
 				});
 				break;
 				
@@ -428,22 +467,22 @@ export default class Editor extends React.Component {
                     </ImageBackground>
                 </View>
                 <View style={styles.editPanel}>
-						<TouchableOpacity onPress={this.resize.bind(this)} style={{marginRight: 15}}>                       
+						{/*<TouchableOpacity onPress={this.resize.bind(this)} style={{marginRight: 15}}>
 							<Text style={{
 								color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
 								textShadowOffset: {width: -1, height: 1},
 								textShadowRadius: 5
 							}}>Resize 50%</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity>*/}
 
                     {this.state.currentPanel}
                 </View>
                 <View style={styles.bottomBar}>
 					<TouchableOpacity onPress={() => this.choosePanel("filter")}>
-						<Text style={{color: "#00CF68", fontSize: 16}}>FILTER</Text>
+						<Text style={{color: this.state.navigationColors.filters, fontSize: 16}}>FILTER</Text>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={() => this.choosePanel("size")}>
-						<Text style={{color: "white", fontSize: 16}}>SIZE&ROT</Text>
+						<Text style={{color: this.state.navigationColors.sizeAndRot, fontSize: 16}}>SIZE&ROT</Text>
 					</TouchableOpacity>
                     <Text style={{color: "white", fontSize: 16}}>FILTER</Text>
                 </View>
@@ -479,8 +518,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingTop: 8,
-        paddingLeft: 30,
-        paddingRight: 30,
+        paddingLeft: 15,
+        paddingRight: 15,
         borderTopColor: '#00CF68',
         borderTopWidth: 1,
     },

@@ -6,32 +6,58 @@ export default class SizeAndRot extends React.Component {
 
     constructor(props) {
         super(props);
+        this.invokeCallback = this.invokeCallback.bind(this);
+        this.state = {
+            rotationValue: 0,
+        };
     }
 
     componentDidMount() {
 
     }
 
-	invokeCallback(val) {
-		
+	invokeCallback() {
+		this.props.callbackFunction(0, this.state.rotationValue);
+	}
+
+	onRotationChange(val) {
+		this.setState({
+			rotationValue: Math.round(val)
+		});
 	}
 
     render() {
         return (
 			<View style={styles.container}>
-				<View style={{flex: 0.8}}>
+				<View style={{flex: 0.7, justifyContent: 'center', paddingLeft: 15}}>
+					<Text style={{color: "white"}}>Size:</Text>
 					<Slider
-					  step={1}
-					  maximumValue={360}
-					  style={styles.sliderStyle}
-					/>
-					<Slider
-					  step={1}
+					  step={0}
 					  maximumValue={100}
 					  style={styles.sliderStyle}
+                      thumbTintColor={"#00CF68"}
+                      minimumTrackTintColor={"#00CF68"}
+                      maximumTrackTintColor={"#CCC"}
+					/>
+                    <Text style={{color: "white"}}>Rotation:</Text>
+					<Slider
+					  step={0}
+					  maximumValue={360}
+					  style={styles.sliderStyle}
+                      onValueChange={this.onRotationChange.bind(this)}
+                      thumbTintColor={"#00CF68"}
+                      minimumTrackTintColor={"#00CF68"}
+                      maximumTrackTintColor={"#CCC"}
 					/>
 				</View>
-				<Button title={"Set"} style={styles.setButton} onPress={() => {}} />
+				<View style={{flex: 0.1, alignItems: 'center', flexDirection: 'column', justifyContent: 'space-between',
+					paddingTop: 31, paddingBottom: 13}}>
+					<Text style={{color: "white"}}>0</Text>
+                    <Text style={{color: "white"}}>{this.state.rotationValue}</Text>
+				</View>
+				<View style={{flex: 0.2, alignItems: 'center', justifyContent: 'center'}}>
+					<Button color={"#00CF68"} title={"Set"} style={styles.setButton} onPress={() => {this.invokeCallback()}} />
+				</View>
 			</View>
         );
     }
@@ -45,7 +71,6 @@ const styles = StyleSheet.create({
 		alignSelf: 'stretch',
 	},
 	setButton: {
-		flex: 0.2,
-		alignSelf: 'stretch'
+		flex: 1,
 	}
 });
