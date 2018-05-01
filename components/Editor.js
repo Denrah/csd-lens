@@ -248,12 +248,14 @@ export default class Editor extends React.Component {
     }
 
     convolution(weights) {
+	    let new_pixels = [];
         this.setState({
             loadingBar: loadingBar
         }, () => {
-            let side = Math.round(Math.sqrt(weights.length));
+
+        });
+		            let side = Math.round(Math.sqrt(weights.length));
             let halfSide = Math.floor(side / 2);
-            let new_pixels = [];
             for (let y = 0; y < this.state.height; y++)
             {
                 for(let x = 0; x < this.state.width; x++)
@@ -271,26 +273,16 @@ export default class Editor extends React.Component {
                                 r += imageUtils.toColorArr(this.state.basePixels[srcOff])[0] * wt;
                                 g += imageUtils.toColorArr(this.state.basePixels[srcOff])[1] * wt;
                                 b += imageUtils.toColorArr(this.state.basePixels[srcOff])[2] * wt;
-                                a += imageUtils.toColorArr(this.state.basePixels[srcOff])[3];
+                                a += imageUtils.toColorArr(this.state.basePixels[srcOff])[3] * wt;
                             }
                         }
                     }
-                    let new_colors = [r, g, b, a];
+                    let new_colors = [r, g, b, 1];
                     new_colors = imageUtils.normalaizeColors(new_colors);
                     new_pixels[y*this.state.width+x] = imageUtils.RGBToInt(new_colors);
                 }
             }
-
-            this.setState({
-                pixels: new_pixels
-            });
-            imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
-                this.setState({
-                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                    loadingBar: null
-                });
-            });
-        });
+		return new_pixels;
     }
 	
 	rotate(angle) {
@@ -337,6 +329,7 @@ export default class Editor extends React.Component {
                         }
                     }
                     let new_colors = [r, g, b, a];
+					console.log(new_colors);
                     new_colors = imageUtils.normalaizeColors(new_colors);
                     new_pixels_filter[y*this.state.width+x] = imageUtils.RGBToInt(new_colors);
                 }
@@ -352,7 +345,91 @@ export default class Editor extends React.Component {
             });
         });
 	}
-
+	
+	gaussanBlur	()
+	{
+		let radius = 5;
+		let amount = 1.5;
+		let threshold = 128;
+		
+		let weights = new Array(radius*radius);
+		let halfSide = Math.floor(radius / 2);
+		let sigma = halfSide;
+		let sum = 0;
+		for(let y = 0; y < radius; y++)
+		{
+			for(let x = 0; x < radius; x++)
+			{
+				let nx = x - halfSide;
+				let ny = y - halfSide;
+				let w = (1/(2*Math.PI*sigma*sigma))*Math.exp(-(nx*nx+ny*ny)/(2*sigma*sigma));
+				let offset = y*radius+x;
+				weights[offset] = w;
+				sum += w;
+			}
+		}
+		for(let i = 0; i < weights.length; i++)
+		{
+			weights[i] /= sum;
+		}
+		
+		
+		let blured_pixels = this.convolution(weights);
+		
+		let contrast_pixels = [];
+		let new_pixels = [];
+		for(let i = 0; i < this.state.width*this.state.height; i++)
+		{
+			let colors = imageUtils.toColorArr(this.state.basePixels[i]);
+			colors[0] = amount * (colors[0] - 128) + 128;
+			colors[1] = amount * (colors[1] - 128) + 128;
+			colors[2] = amount * (colors[2] - 128) + 128;
+			colors = imageUtils.normalaizeColors(colors);
+			contrast_pixels[i] = imageUtils.RGBToInt(colors);
+			
+			let orig_luminosity = (imageUtils.toColorArr(this.state.basePixels[i])[0] + imageUtils.toColorArr(this.state.basePixels[i])[1] + imageUtils.toColorArr(this.state.basePixels[i])[2])/3;
+			let blur_luminosity = (imageUtils.toColorArr(blured_pixels[i])[0] + imageUtils.toColorArr(blured_pixels[i])[1] + imageUtils.toColorArr(blured_pixels[i])[2])/3;
+			
+			console.log(orig_luminosity - blur_luminosity);
+			
+			if(orig_luminosity - blur_luminosity > 5)
+			{
+				new_pixels[i] = contrast_pixels[i];
+			}
+			else
+			{
+				new_pixels[i] = this.state.basePixels[i];
+			}
+		}
+			
+		this.setState({
+                pixels: new_pixels
+            });
+		imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+			this.setState({
+				imageSource: {uri: 'data:image/jpeg;base64,' + res},
+				loadingBar: null
+			});
+		});
+	}
+	
+	sharp()
+	{
+		let new_pixels = this.convolution([-1, -1, -1,
+                    -1, 9, -1,
+                    -1, -1, -1]);
+		
+		
+		this.setState({
+                pixels: new_pixels
+            });
+		imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+			this.setState({
+				imageSource: {uri: 'data:image/jpeg;base64,' + res},
+				loadingBar: null
+			});
+		});
+	}
 
     componentDidMount() {
 		this.choosePanel("filter");
@@ -411,9 +488,7 @@ export default class Editor extends React.Component {
 				this.threshold();
 				break;
 			case "sharp":
-				this.convolution([-1, -1, -1,
-                    -1, 9, -1,
-                    -1, -1, -1]);
+				this.sharp();
 				break;
 			case "back":
 				this.invert();
@@ -474,10 +549,12 @@ export default class Editor extends React.Component {
 					<TouchableOpacity onPress={() => this.choosePanel("filter")}>
 						<Text style={{color: this.state.navigationColors.filters, fontSize: 16}}>FILTER</Text>
 					</TouchableOpacity>
-					<TouchableOpacity onPress={() => this.choosePanel("size")}>
+					<TouchableOpacity onPress={() => this.Panel("size")}>
 						<Text style={{color: this.state.navigationColors.sizeAndRot, fontSize: 16}}>SIZE&ROT</Text>
 					</TouchableOpacity>
-                    <Text style={{color: "white", fontSize: 16}}>FILTER</Text>
+                    <TouchableOpacity onPress={this.gaussanBlur.bind(this)}>
+						<Text style={{color: this.state.navigationColors.sizeAndRot, fontSize: 16}}>USM</Text>
+					</TouchableOpacity>
                 </View>
             </View>
         );
