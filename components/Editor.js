@@ -431,7 +431,7 @@ export default class Editor extends React.Component {
             loadingBar: loadingBar
         }, () => {
             this.rotate(rot);
-			this.resize(size);
+			//this.resize(size);
         });
     }
 
@@ -463,19 +463,11 @@ export default class Editor extends React.Component {
         return (
             <View style={styles.container}>
                 <View style={styles.imageDesk}>
-                    <ImageBackground source={this.state.imageSource} style={styles.uploadImage}>
+                    <ImageBackground resizeMode={"contain"} source={this.state.imageSource} style={styles.uploadImage}>
                         {this.state.loadingBar}
                     </ImageBackground>
                 </View>
                 <View style={styles.editPanel}>
-						{/*<TouchableOpacity onPress={this.resize.bind(this)} style={{marginRight: 15}}>
-							<Text style={{
-								color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-								textShadowOffset: {width: -1, height: 1},
-								textShadowRadius: 5
-							}}>Resize 50%</Text>
-                        </TouchableOpacity>*/}
-
                     {this.state.currentPanel}
                 </View>
                 <View style={styles.bottomBar}>

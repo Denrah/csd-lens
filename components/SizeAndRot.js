@@ -9,6 +9,7 @@ export default class SizeAndRot extends React.Component {
         this.invokeCallback = this.invokeCallback.bind(this);
         this.state = {
             rotationValue: 0,
+			sizeValue: 0,
         };
     }
 
