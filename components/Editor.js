@@ -348,8 +348,8 @@ export default class Editor extends React.Component {
 	
 	gaussanBlur	()
 	{
-		let radius = 5;
-		let amount = 1.5;
+		let radius = 40;
+		let amount = 2;
 		let threshold = 128;
 		
 		let weights = new Array(radius*radius);
@@ -378,6 +378,18 @@ export default class Editor extends React.Component {
 		
 		let contrast_pixels = [];
 		let new_pixels = [];
+		let unsharp_mask = [];
+		
+		for(let i = 0; i < this.state.width*this.state.height; i++)
+		{
+			let colors = imageUtils.toColorArr(this.state.basePixels[i]);
+			let b_colors = imageUtils.toColorArr(blured_pixels[i]);
+			colors[0] -= b_colors[0];
+			colors[1] -= b_colors[1];
+			colors[2] -= b_colors[2];
+			colors = imageUtils.normalaizeColors(colors);
+			unsharp_mask[i] = imageUtils.RGBToInt(colors);
+		}
 		for(let i = 0; i < this.state.width*this.state.height; i++)
 		{
 			let colors = imageUtils.toColorArr(this.state.basePixels[i]);
@@ -386,14 +398,24 @@ export default class Editor extends React.Component {
 			colors[2] = amount * (colors[2] - 128) + 128;
 			colors = imageUtils.normalaizeColors(colors);
 			contrast_pixels[i] = imageUtils.RGBToInt(colors);
-			
+		}
+		for(let i = 0; i < this.state.width*this.state.height; i++)
+		{
 			let orig_luminosity = (imageUtils.toColorArr(this.state.basePixels[i])[0] + imageUtils.toColorArr(this.state.basePixels[i])[1] + imageUtils.toColorArr(this.state.basePixels[i])[2])/3;
-			let blur_luminosity = (imageUtils.toColorArr(blured_pixels[i])[0] + imageUtils.toColorArr(blured_pixels[i])[1] + imageUtils.toColorArr(blured_pixels[i])[2])/3;
+			let contrast_luminosity = (imageUtils.toColorArr(contrast_pixels[i])[0] + imageUtils.toColorArr(contrast_pixels[i])[1] + imageUtils.toColorArr(contrast_pixels[i])[2])/3;
+			let diff = contrast_luminosity - orig_luminosity;
+			let u_mask = (imageUtils.toColorArr(unsharp_mask[i])[0] + imageUtils.toColorArr(unsharp_mask[i])[1] + imageUtils.toColorArr(unsharp_mask[i])[2])/3;
+			let coef = parseFloat(u_mask / 255);
+			let delta = diff * coef;
 			
-			console.log(orig_luminosity - blur_luminosity);
-			
-			if(orig_luminosity - blur_luminosity > 5)
+			if(u_mask > 30)
 			{
+				/*let colors = imageUtils.toColorArr(this.state.basePixels[i]);
+				colors[0] += delta;
+				colors[1] += delta;
+				colors[2] += delta;
+				colors = imageUtils.normalaizeColors(colors);
+				new_pixels[i] = imageUtils.RGBToInt(colors);*/
 				new_pixels[i] = contrast_pixels[i];
 			}
 			else
@@ -401,7 +423,6 @@ export default class Editor extends React.Component {
 				new_pixels[i] = this.state.basePixels[i];
 			}
 		}
-			
 		this.setState({
                 pixels: new_pixels
             });
