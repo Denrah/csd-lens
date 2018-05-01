@@ -17,12 +17,18 @@ export default class SizeAndRot extends React.Component {
     }
 
 	invokeCallback() {
-		this.props.callbackFunction(0, this.state.rotationValue);
+		this.props.callbackFunction(this.state.sizeValue, this.state.rotationValue);
 	}
 
 	onRotationChange(val) {
 		this.setState({
 			rotationValue: Math.round(val)
+		});
+	}
+	
+	onSizeChange(val) {
+		this.setState({
+			sizeValue: Math.round(val)
 		});
 	}
 
@@ -35,6 +41,7 @@ export default class SizeAndRot extends React.Component {
 					  step={0}
 					  maximumValue={100}
 					  style={styles.sliderStyle}
+					  onValueChange={this.onSizeChange.bind(this)}
                       thumbTintColor={"#00CF68"}
                       minimumTrackTintColor={"#00CF68"}
                       maximumTrackTintColor={"#CCC"}
@@ -52,7 +59,7 @@ export default class SizeAndRot extends React.Component {
 				</View>
 				<View style={{flex: 0.1, alignItems: 'center', flexDirection: 'column', justifyContent: 'space-between',
 					paddingTop: 31, paddingBottom: 13}}>
-					<Text style={{color: "white"}}>0</Text>
+					<Text style={{color: "white"}}>{this.state.sizeValue}</Text>
                     <Text style={{color: "white"}}>{this.state.rotationValue}</Text>
 				</View>
 				<View style={{flex: 0.2, alignItems: 'center', justifyContent: 'center'}}>

@@ -28,9 +28,6 @@ export default class Main extends React.Component {
     }
 
     selectImage() {
-        this.setState({
-            loadingBar: loadingBar
-        });
         ImagePicker.showImagePicker(options, (response) => {
 
             if (response.didCancel) {
@@ -43,6 +40,9 @@ export default class Main extends React.Component {
                 console.log('User tapped custom button: ', response.customButton);
             }
             else {
+				this.setState({
+					loadingBar: loadingBar
+				});
                 this.props.navigation.navigate('Editor', {response: response});
             }
         });

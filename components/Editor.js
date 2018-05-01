@@ -170,13 +170,13 @@ export default class Editor extends React.Component {
         });
     }
 	
-	resize() {
+	resize(size) {
         this.setState({
             loadingBar: loadingBar
         }, () => {
-			
-			let w_result = parseInt(this.state.width/100*50);
-			let h_result = parseInt(this.state.height/100*50);
+			let size = 50;
+			let w_result = parseInt(this.state.width/100*size);
+			let h_result = parseInt(this.state.height/100*size);
 			
 			let new_pixels = new Array(w_result * h_result);
 			
@@ -431,6 +431,7 @@ export default class Editor extends React.Component {
             loadingBar: loadingBar
         }, () => {
             this.rotate(rot);
+			this.resize(size);
         });
     }
 
