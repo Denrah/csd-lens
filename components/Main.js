@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Text, View, Button, Image, ProgressBarAndroid} from 'react-native';
+import {StyleSheet, Text, View, Button, Image, ProgressBarAndroid, ImageBackground} from 'react-native';
 import {StackNavigator} from 'react-navigation';
 
 let ImagePicker = require('react-native-image-picker');
@@ -43,7 +43,13 @@ export default class Main extends React.Component {
 				this.setState({
 					loadingBar: loadingBar
 				});
-                this.props.navigation.navigate('Editor', {response: response});
+				setTimeout(() => {
+					this.props.navigation.navigate('Editor', {response: response});
+					this.setState({
+						loadingBar: null
+					});
+				}, 10);
+				
             }
         });
     }
@@ -51,8 +57,14 @@ export default class Main extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <Button title={"Choose picture"} onPress={this.selectImage.bind(this)}/>
-                {this.state.loadingBar}
+				<ImageBackground source={require('../assets/ui/mm_bg.jpg')}  style={styles.bgImage}>
+					<Text style={{color: "white", fontSize: 80, fontWeight: "100", marginBottom: 60, marginTop: -60,
+							textShadowColor: 'rgba(0, 0, 0, 0.75)',
+                            textShadowOffset: {width: -1, height: 1},
+                            textShadowRadius: 20}}>LENS</Text>
+					<Button color={"#00CF68"} title={"Choose picture"} onPress={this.selectImage.bind(this)}/>
+					{this.state.loadingBar}
+				</ImageBackground>
             </View>
         );
     }
@@ -64,6 +76,16 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+	bgImage: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexGrow: 1,
     },
     uploadAvatar: {
         width: 200,
