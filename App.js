@@ -15,7 +15,7 @@ class App extends React.Component {
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
-            fontWeight: 'bold',
+            fontWeight: 'normal',
         },
 	};
 

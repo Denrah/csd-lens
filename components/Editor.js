@@ -21,7 +21,7 @@ let filters = require('../libs/filters.js');
 let imageUtils = require('../libs/imageUtils.js');
 
 let response;
-let loadingBar = <ProgressBarAndroid styleAttr="Inverse"/>;
+let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse"/>;
 
 export default class Editor extends React.Component {
 
@@ -33,7 +33,7 @@ export default class Editor extends React.Component {
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
-            fontWeight: 'bold',
+            fontWeight: 'normal',
         },
     };
 
@@ -61,7 +61,7 @@ export default class Editor extends React.Component {
     sepia() {
         this.setState({
             loadingBar: loadingBar
-        }, () => {
+        }); setTimeout( () => {
             let new_pixels = [];
             for (let i = 0; i < this.state.width * this.state.height; i++) {
                 colors = imageUtils.toColorArr(this.state.basePixels[i]);
@@ -83,7 +83,7 @@ export default class Editor extends React.Component {
                     loadingBar: null,
                 });
             });
-        });
+        }, 10);
     }
 
     grayscale() {
@@ -215,9 +215,6 @@ export default class Editor extends React.Component {
 					new_pixels[offset++] = imageUtils.RGBToInt(imageUtils.normalaizeColors(rgba));
 				}
 			}
-			console.log(w_result);
-			console.log(h_result);
-			console.log(new_pixels);
 						
 			this.setState({
                 pixels: new_pixels
@@ -292,10 +289,19 @@ export default class Editor extends React.Component {
     }
 	
 	rotate(angle) {
+		let b_angle = (angle%90) * (Math.PI / 180);
 		angle = -angle * (Math.PI / 180);
 		this.setState({
             loadingBar: loadingBar
         }, () => {
+			let tw = Math.max(this.state.width, this.state.height);
+			let th = Math.min(this.state.width, this.state.height);
+			let k = 1/((tw / th) * Math.sin(b_angle) + Math.cos(b_angle));
+			let n_width = Math.floor(this.state.width * k);
+			let n_height = Math.floor(this.state.height * k);
+			let dx = Math.ceil((this.state.width - n_width)/2);
+			let dy = Math.ceil((this.state.height - n_height)/2);
+		
             let new_pixels = new Array(this.state.width * this.state.height);
 			new_pixels.fill(-1);
             for (let i = 0; i < this.state.width * this.state.height; i++) {
@@ -304,11 +310,13 @@ export default class Editor extends React.Component {
 				let npX = parseInt(Math.cos(angle)*pX - Math.sin(angle)*pY) + parseInt(this.state.width/2);
 				let npY = parseInt(Math.sin(angle)*pX + Math.cos(angle)*pY) + parseInt(this.state.height/2);
 				let newPix = npY * this.state.width + npX;
+				
 				if(npX >= 0 && npX < this.state.width && npY >= 0 && npY < this.state.height)
 					new_pixels[i] = this.state.basePixels[newPix];
 				else
 					new_pixels[i] = -1;
             }
+			
             let weights = [1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9];
             let new_pixels_filter = [];
             let side = Math.round(Math.sqrt(weights.length));
@@ -335,15 +343,27 @@ export default class Editor extends React.Component {
                         }
                     }
                     let new_colors = [r, g, b, a];
-					console.log(new_colors);
                     new_colors = imageUtils.normalaizeColors(new_colors);
                     new_pixels_filter[y*this.state.width+x] = imageUtils.RGBToInt(new_colors);
                 }
             }
+			
+			let crop_pixels = new Array(n_width * n_height);
+			for(let i = 0; i < n_width * n_height; i++)
+			{
+				let pX = i % n_width;
+				let pY = parseInt(i / n_width);
+				pX += dx;
+				pY += dy;
+				let newPix = pY * this.state.width + pX;
+				crop_pixels[i] = new_pixels_filter[newPix];
+			}
+			
+			
             this.setState({
                 pixels: new_pixels_filter
             });
-            imageUtils.getBase64FromPixels(new_pixels_filter, this.state.width, this.state.height).then(res => {
+            imageUtils.getBase64FromPixels(crop_pixels, n_width, n_height).then(res => {
                 this.setState({
                     imageSource: {uri: 'data:image/jpeg;base64,' + res},
                     loadingBar: null

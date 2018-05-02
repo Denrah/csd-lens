@@ -12,7 +12,7 @@ let options = {
     }
 };
 
-let loadingBar = <ProgressBarAndroid styleAttr="Inverse" />;
+let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse" />;
 
 export default class Main extends React.Component {
 

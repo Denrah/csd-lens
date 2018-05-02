@@ -36,8 +36,8 @@ export default class SizeAndRot extends React.Component {
     render() {
         return (
 			<View style={styles.container}>
-				<View style={{flex: 0.7, justifyContent: 'center', paddingLeft: 15}}>
-					<Text style={{color: "white"}}>Size:</Text>
+				<View style={{flex: 0.7, justifyContent: 'center', paddingLeft: 0}}>
+					<Text style={{color: "white", marginLeft: 15}}>Size:</Text>
 					<Slider
 					  step={1}
 					  maximumValue={100}
@@ -47,7 +47,7 @@ export default class SizeAndRot extends React.Component {
                       minimumTrackTintColor={"#00CF68"}
                       maximumTrackTintColor={"#CCC"}
 					/>
-                    <Text style={{color: "white"}}>Rotation:</Text>
+                    <Text style={{color: "white", marginLeft: 15}}>Rotation:</Text>
 					<Slider
 					  step={1}
 					  maximumValue={360}
