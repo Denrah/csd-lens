@@ -23,13 +23,13 @@ export default class SizeAndRot extends React.Component {
 
 	onRotationChange(val) {
 		this.setState({
-			rotationValue: Math.round(val)
+			rotationValue: val
 		});
 	}
 	
 	onSizeChange(val) {
 		this.setState({
-			sizeValue: Math.round(val)
+			sizeValue: val
 		});
 	}
 
@@ -39,7 +39,7 @@ export default class SizeAndRot extends React.Component {
 				<View style={{flex: 0.7, justifyContent: 'center', paddingLeft: 15}}>
 					<Text style={{color: "white"}}>Size:</Text>
 					<Slider
-					  step={0}
+					  step={1}
 					  maximumValue={100}
 					  style={styles.sliderStyle}
 					  onValueChange={this.onSizeChange.bind(this)}
@@ -49,7 +49,7 @@ export default class SizeAndRot extends React.Component {
 					/>
                     <Text style={{color: "white"}}>Rotation:</Text>
 					<Slider
-					  step={0}
+					  step={1}
 					  maximumValue={360}
 					  style={styles.sliderStyle}
                       onValueChange={this.onRotationChange.bind(this)}

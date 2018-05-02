@@ -14,6 +14,7 @@ import {
 import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
 import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
+import UnsharpMask from "./UnsharpMask";
 
 
 let filters = require('../libs/filters.js');
@@ -50,7 +51,8 @@ export default class Editor extends React.Component {
 			currentPanel: null,
             navigationColors: {
                 filters: "#00CF68",
-                sizeAndRot: "white"
+                sizeAndRot: "white",
+				unsharpMask: "white"
             }
         };
 		this.choosePanel = this.choosePanel.bind(this);
@@ -254,7 +256,11 @@ export default class Editor extends React.Component {
         }, () => {
 
         });
-		            let side = Math.round(Math.sqrt(weights.length));
+			if(weights.length == 1)
+			{
+				return this.state.basePixels;
+			}
+		    let side = Math.round(Math.sqrt(weights.length));
             let halfSide = Math.floor(side / 2);
             for (let y = 0; y < this.state.height; y++)
             {
@@ -346,12 +352,9 @@ export default class Editor extends React.Component {
         });
 	}
 	
-	gaussanBlur	()
-	{
-		let radius = 30;
-		let amount = 5;
-		let threshold = 128;
-		
+	unsharpMask(radius, amount, threshold)
+	{		
+		radius = radius * 2 + 1;
 		let weights = new Array(radius*radius);
 		let halfSide = Math.floor(radius / 2);
 		let sigma = halfSide;
@@ -376,45 +379,20 @@ export default class Editor extends React.Component {
 		
 		let blured_pixels = this.convolution(weights);
 		
-		let contrast_pixels = [];
 		let new_pixels = [];
-		let unsharp_mask = [];
-		
-		for(let i = 0; i < this.state.width*this.state.height; i++)
-		{
-			let colors = imageUtils.toColorArr(this.state.basePixels[i]);
-			let b_colors = imageUtils.toColorArr(blured_pixels[i]);
-			colors[0] -= b_colors[0];
-			colors[1] -= b_colors[1];
-			colors[2] -= b_colors[2];
-			colors = imageUtils.normalaizeColors(colors);
-			unsharp_mask[i] = imageUtils.RGBToInt(colors);
-		}
-		for(let i = 0; i < this.state.width*this.state.height; i++)
-		{
-			let colors = imageUtils.toColorArr(this.state.basePixels[i]);
-			colors[0] = amount * (colors[0] - 128) + 128;
-			colors[1] = amount * (colors[1] - 128) + 128;
-			colors[2] = amount * (colors[2] - 128) + 128;
-			colors = imageUtils.normalaizeColors(colors);
-			contrast_pixels[i] = imageUtils.RGBToInt(colors);
-		}
+
 		for(let i = 0; i < this.state.width*this.state.height; i++)
 		{
 			let orig_luminosity = (imageUtils.toColorArr(this.state.basePixels[i])[0] + imageUtils.toColorArr(this.state.basePixels[i])[1] + imageUtils.toColorArr(this.state.basePixels[i])[2])/3;
-			let contrast_luminosity = (imageUtils.toColorArr(contrast_pixels[i])[0] + imageUtils.toColorArr(contrast_pixels[i])[1] + imageUtils.toColorArr(contrast_pixels[i])[2])/3;
-			let diff = contrast_luminosity - orig_luminosity;
-			let u_mask = (imageUtils.toColorArr(unsharp_mask[i])[0] + imageUtils.toColorArr(unsharp_mask[i])[1] + imageUtils.toColorArr(unsharp_mask[i])[2])/3;
-			let coef = parseFloat(u_mask / 255);
-			let delta = diff * coef;
-			coef = 0.5;		
-			if(u_mask > 0)
+			let blured_luminosity = (imageUtils.toColorArr(blured_pixels[i])[0] + imageUtils.toColorArr(blured_pixels[i])[1] + imageUtils.toColorArr(blured_pixels[i])[2])/3;
+			let diff = orig_luminosity - blured_luminosity;
+	
+			if(Math.abs(2*diff) > threshold)
 			{
 				let colors = imageUtils.toColorArr(this.state.basePixels[i]);
-				let contrast_colors = imageUtils.toColorArr(contrast_pixels[i]);
-				colors[0] += (contrast_colors[0] - colors[0]) * coef;
-				colors[1] += (contrast_colors[1] - colors[1]) * coef;
-				colors[2] += (contrast_colors[2] - colors[2]) * coef;
+				colors[0] += amount * diff;
+				colors[1] += amount * diff;
+				colors[2] += amount * diff;
 				colors = imageUtils.normalaizeColors(colors);
 				new_pixels[i] = imageUtils.RGBToInt(colors);
 			}
@@ -538,7 +516,8 @@ export default class Editor extends React.Component {
 					currentPanel: <FiltersBar callbackFunction={this.filterCallback.bind(this)}/>,
                     navigationColors: {
 					    filters: "#00CF68",
-                        sizeAndRot: "white"
+                        sizeAndRot: "white",
+						unsharpMask: "white"
                     }
 				});
 				break;
@@ -547,7 +526,18 @@ export default class Editor extends React.Component {
 					currentPanel: <SizeAndRot callbackFunction={this.sizeAndRotCallback.bind(this)}/>,
                     navigationColors: {
                         filters: "white",
-                        sizeAndRot: "#00CF68"
+                        sizeAndRot: "#00CF68",
+						unsharpMask: "white"
+                    }
+				});
+				break;
+			case "usm":
+				this.setState({
+					currentPanel: <UnsharpMask callbackFunction={this.unsharpMask.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+						sizeAndRot: "white",
+                        unsharpMask: "#00CF68"
                     }
 				});
 				break;
@@ -570,11 +560,11 @@ export default class Editor extends React.Component {
 					<TouchableOpacity onPress={() => this.choosePanel("filter")}>
 						<Text style={{color: this.state.navigationColors.filters, fontSize: 16}}>FILTER</Text>
 					</TouchableOpacity>
-					<TouchableOpacity onPress={() => this.Panel("size")}>
+					<TouchableOpacity onPress={() => this.choosePanel("size")}>
 						<Text style={{color: this.state.navigationColors.sizeAndRot, fontSize: 16}}>SIZE&ROT</Text>
 					</TouchableOpacity>
-                    <TouchableOpacity onPress={this.gaussanBlur.bind(this)}>
-						<Text style={{color: this.state.navigationColors.sizeAndRot, fontSize: 16}}>USM</Text>
+                    <TouchableOpacity onPress={() => this.choosePanel("usm")}>
+						<Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 16}}>USM</Text>
 					</TouchableOpacity>
                 </View>
             </View>
