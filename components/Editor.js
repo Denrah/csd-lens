@@ -348,8 +348,8 @@ export default class Editor extends React.Component {
 	
 	gaussanBlur	()
 	{
-		let radius = 40;
-		let amount = 2;
+		let radius = 30;
+		let amount = 5;
 		let threshold = 128;
 		
 		let weights = new Array(radius*radius);
@@ -407,16 +407,16 @@ export default class Editor extends React.Component {
 			let u_mask = (imageUtils.toColorArr(unsharp_mask[i])[0] + imageUtils.toColorArr(unsharp_mask[i])[1] + imageUtils.toColorArr(unsharp_mask[i])[2])/3;
 			let coef = parseFloat(u_mask / 255);
 			let delta = diff * coef;
-			
-			if(u_mask > 30)
+			coef = 0.5;		
+			if(u_mask > 0)
 			{
-				/*let colors = imageUtils.toColorArr(this.state.basePixels[i]);
-				colors[0] += delta;
-				colors[1] += delta;
-				colors[2] += delta;
+				let colors = imageUtils.toColorArr(this.state.basePixels[i]);
+				let contrast_colors = imageUtils.toColorArr(contrast_pixels[i]);
+				colors[0] += (contrast_colors[0] - colors[0]) * coef;
+				colors[1] += (contrast_colors[1] - colors[1]) * coef;
+				colors[2] += (contrast_colors[2] - colors[2]) * coef;
 				colors = imageUtils.normalaizeColors(colors);
-				new_pixels[i] = imageUtils.RGBToInt(colors);*/
-				new_pixels[i] = contrast_pixels[i];
+				new_pixels[i] = imageUtils.RGBToInt(colors);
 			}
 			else
 			{
