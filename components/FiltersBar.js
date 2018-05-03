@@ -84,6 +84,18 @@ export default class FiltersBar extends React.Component {
                         }}>BACK</Text>
                     </ImageBackground>
                 </TouchableOpacity>
+				<TouchableOpacity onPress={() => this.invokeCallback("emboss")} style={{paddingRight: 15}}>
+                    <ImageBackground style={{
+                        width: 70, height: 70, alignItems: 'center',
+                        justifyContent: 'center',
+                    }} source={require('../assets/filters/emboss.png')}>
+                        <Text style={{
+                            color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
+                            textShadowOffset: {width: -1, height: 1},
+                            textShadowRadius: 5
+                        }}>EMBOSS</Text>
+                    </ImageBackground>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => this.invokeCallback("edge")} style={{paddingRight: 15}}>
                     <ImageBackground style={{
                         width: 70, height: 70, alignItems: 'center',
@@ -94,18 +106,6 @@ export default class FiltersBar extends React.Component {
                             textShadowOffset: {width: -1, height: 1},
                             textShadowRadius: 5
                         }}>EDGE</Text>
-                    </ImageBackground>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => this.invokeCallback("emboss")} style={{paddingRight: 15}}>
-                    <ImageBackground style={{
-                        width: 70, height: 70, alignItems: 'center',
-                        justifyContent: 'center',
-                    }} source={require('../assets/filters/emboss.png')}>
-                        <Text style={{
-                            color: "white", fontSize: 16, textShadowColor: 'rgba(0, 0, 0, 0.75)',
-                            textShadowOffset: {width: -1, height: 1},
-                            textShadowRadius: 5
-                        }}>EMBOSS</Text>
                     </ImageBackground>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => this.invokeCallback("sobel")} style={{paddingRight: 15}}>

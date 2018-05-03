@@ -26,7 +26,7 @@ let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse"/>;
 export default class Editor extends React.Component {
 
     static navigationOptions = ({navigation}) => {
-        const params = navigation.state.params || {};
+        const params = navigation.state.params || {resizeImage: require('../assets/ui/full_size.png')};
         return {
             title: 'Edit image',
             headerStyle: {
@@ -41,7 +41,7 @@ export default class Editor extends React.Component {
                 <TouchableOpacity onPress={params.setResizeMode}>
                     <Image style={{
                         width: 20, height: 20, marginRight: 10
-                    }} source={require('../assets/ui/full_size.png')}>
+                    }} source={params.resizeImage}>
                     </Image>
                 </TouchableOpacity>
             ),
@@ -66,7 +66,6 @@ export default class Editor extends React.Component {
                 unsharpMask: "white"
             },
             imageMode: "contain",
-            sizeImage: require('../assets/ui/full_size.png'),
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
@@ -74,9 +73,15 @@ export default class Editor extends React.Component {
 
     setResizeMode() {
         if (this.state.imageMode === "contain")
-            this.setState({imageMode: "cover", sizeImage: require('../assets/ui/min_size.png')});
+		{
+            this.setState({imageMode: "cover"});
+			this.props.navigation.setParams({resizeImage: require('../assets/ui/min_size.png')});
+		}
         else
-            this.setState({imageMode: "contain", sizeImage: require('../assets/ui/full_size.png')});
+		{
+            this.setState({imageMode: "contain"});
+			this.props.navigation.setParams({resizeImage: require('../assets/ui/full_size.png')});
+		}
     }
 
     sepia() {
@@ -523,7 +528,7 @@ export default class Editor extends React.Component {
     }
 
     componentDidMount() {
-        this.props.navigation.setParams({setResizeMode: this.setResizeMode, resizeImage: this.state.sizeImage});
+        this.props.navigation.setParams({setResizeMode: this.setResizeMode, resizeImage: require('../assets/ui/full_size.png')});
         this.choosePanel("filter");
         const {params} = this.props.navigation.state;
         response = params.response;
