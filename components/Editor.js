@@ -25,16 +25,27 @@ let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse"/>;
 
 export default class Editor extends React.Component {
 
-    static navigationOptions = {
-        title: 'Edit image',
-        headerStyle: {
-            backgroundColor: '#000',
-            height: 40,
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-            fontWeight: 'normal',
-        },
+    static navigationOptions = ({navigation}) => {
+        const params = navigation.state.params || {};
+        return {
+            title: 'Edit image',
+            headerStyle: {
+                backgroundColor: '#000',
+                height: 40,
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+                fontWeight: 'normal',
+            },
+            headerRight: (
+                <TouchableOpacity onPress={params.setResizeMode}>
+                    <Image style={{
+                        width: 20, height: 20, marginRight: 10
+                    }} source={require('../assets/ui/full_size.png')}>
+                    </Image>
+                </TouchableOpacity>
+            ),
+        }
     };
 
     constructor(props) {
@@ -53,9 +64,19 @@ export default class Editor extends React.Component {
                 filters: "#00CF68",
                 sizeAndRot: "white",
                 unsharpMask: "white"
-            }
+            },
+            imageMode: "contain",
+            sizeImage: require('../assets/ui/full_size.png'),
         };
         this.choosePanel = this.choosePanel.bind(this);
+        this.setResizeMode = this.setResizeMode.bind(this);
+    }
+
+    setResizeMode() {
+        if (this.state.imageMode === "contain")
+            this.setState({imageMode: "cover", sizeImage: require('../assets/ui/min_size.png')});
+        else
+            this.setState({imageMode: "contain", sizeImage: require('../assets/ui/full_size.png')});
     }
 
     sepia() {
@@ -449,7 +470,7 @@ export default class Editor extends React.Component {
         });
     }
 
-    emboss(){
+    emboss() {
         let new_pixels = this.convolution([0, 1, 0,
             1, 0, -1,
             0, -1, 0]);
@@ -476,17 +497,17 @@ export default class Editor extends React.Component {
         });
     }
 
-    async sobel(){
-        let new_pixels = this.convolution([ -1, 0, 1,
+    async sobel() {
+        let new_pixels = this.convolution([-1, 0, 1,
             -2, 0, 2,
-            -1, 0, 1 ]);
+            -1, 0, 1]);
         await this.setState({
             pixels: new_pixels
         }, () => {
             setTimeout(() => {
-                new_pixels = this.convolution([ -1, 0, 1,
+                new_pixels = this.convolution([-1, 0, 1,
                     -2, 0, 2,
-                    -1, 0, 1 ]);
+                    -1, 0, 1]);
 
                 this.setState({
                     pixels: new_pixels
@@ -502,6 +523,7 @@ export default class Editor extends React.Component {
     }
 
     componentDidMount() {
+        this.props.navigation.setParams({setResizeMode: this.setResizeMode, resizeImage: this.state.sizeImage});
         this.choosePanel("filter");
         const {params} = this.props.navigation.state;
         response = params.response;
@@ -628,7 +650,8 @@ export default class Editor extends React.Component {
         return (
             <View style={styles.container}>
                 <View style={styles.imageDesk}>
-                    <ImageBackground resizeMode={"contain"} source={this.state.imageSource} style={styles.uploadImage}>
+                    <ImageBackground resizeMode={this.state.imageMode} source={this.state.imageSource}
+                                     style={styles.uploadImage}>
                         {this.state.loadingBar}
                     </ImageBackground>
                 </View>
