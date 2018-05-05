@@ -9,7 +9,8 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
-    Slider
+    Slider,
+	TouchableWithoutFeedback
 } from 'react-native';
 import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
 import FiltersBar from "./FiltersBar";
@@ -65,6 +66,28 @@ export default class Editor extends React.Component {
                 sizeAndRot: "white",
                 unsharpMask: "white"
             },
+			transformDots: {
+				count: 0,
+				f1: {x: -10, y: 0},
+				f2: {x: -10, y: 0},
+				f3: {x: -10, y: 0},
+				s1: {x: -10, y: 0},
+				s2: {x: -10, y: 0},
+				s3: {x: -10, y: 0}
+			},
+			transformDotsCoordinates: {
+				f1: {x: 0, y: 0},
+				f2: {x: 0, y: 0},
+				f3: {x: 0, y: 0},
+				s1: {x: 0, y: 0},
+				s2: {x: 0, y: 0},
+				s3: {x: 0, y: 0}
+			},
+			imageContainer: {
+				width: 0,
+				height: 0
+			},
+			drawableDots: null,
             imageMode: "contain",
         };
         this.choosePanel = this.choosePanel.bind(this);
@@ -536,6 +559,13 @@ export default class Editor extends React.Component {
         this.setState({
             loadingBar: loadingBar
         });
+		var binary_string =  atob(response.data);
+		var len = binary_string.length;
+		var bytes = new Uint8Array( len );
+		for (var i = 0; i < len; i++)        {
+			bytes[i] = binary_string.charCodeAt(i);
+		}
+		console.log(bytes.buffer);
         imageUtils.getPixelsArray(response.path).then(res => {
             this.setState({
                 pixels: res[0],
@@ -650,15 +680,101 @@ export default class Editor extends React.Component {
 
         }
     }
+	
+	drawDots() {
+		this.setState({
+			drawableDots: (
+				<View style={{position: "absolute", top: 0, bottom: 0, left: 0, right: 0}}>
+					<View style={[styles.circle, {backgroundColor: '#00CF68', left: this.state.transformDots.f1.x-2, top: this.state.transformDots.f1.y-2}]} />
+					<View style={[styles.circle, {backgroundColor: '#00CF68', left: this.state.transformDots.f2.x-2, top: this.state.transformDots.f2.y-2}]} />
+					<View style={[styles.circle, {backgroundColor: '#00CF68', left: this.state.transformDots.f3.x-2, top: this.state.transformDots.f3.y-2}]} />
+					<View style={[styles.circle, {backgroundColor: 'red', left: this.state.transformDots.s1.x-2, top: this.state.transformDots.s1.y-2}]} />
+					<View style={[styles.circle, {backgroundColor: 'red', left: this.state.transformDots.s2.x-2, top: this.state.transformDots.s2.y-2}]} />
+					<View style={[styles.circle, {backgroundColor: 'red', left: this.state.transformDots.s3.x-2, top: this.state.transformDots.s3.y-2}]} />
+				</View>
+			)
+		});
+	}
+	
+	dotsToImageCoordinates() {
+		let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
+		let tmp = this.state.transformDotsCoordinates;
+		for(let key in this.state.transformDotsCoordinates)
+		{
+			tmp[key].x = Math.round(this.state.transformDots[key].x * k - Math.max((this.state.imageContainer.width * k - this.state.width)/2, 0));
+			tmp[key].y = Math.round(this.state.transformDots[key].y * k - Math.max((this.state.imageContainer.height * k - this.state.height)/2, 0));
+		}
+		this.setState({
+			transformDotsCoordinates: tmp
+		});
+
+	}
+	
+	handleImageTouch(e) {
+		let tmp = this.state.transformDots;
+		switch(this.state.transformDots.count)
+		{
+			case 0:
+				tmp.count = 1;
+				tmp.f1 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+				this.setState({
+					transformDots: tmp,
+				}, () => {this.drawDots()});
+				break;
+			case 1:
+				tmp.count = 2;
+				tmp.f2 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+				this.setState({
+					transformDots: tmp,
+				}, () => {this.drawDots()});
+				break;
+			case 2:
+				tmp.count = 3;
+				tmp.f3 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+				this.setState({
+					transformDots: tmp,
+				}, () => {this.drawDots()});
+				break;
+			case 3:
+				tmp.count = 4;
+				tmp.s1 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+				this.setState({
+					transformDots: tmp,
+				}, () => {this.drawDots()});
+				break;
+			case 4:
+				tmp.count = 5;
+				tmp.s2 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+				this.setState({
+					transformDots: tmp,
+				}, () => {this.drawDots()});
+				break;
+			case 5:
+				tmp.count = 6;
+				tmp.s3 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+				this.setState({
+					transformDots: tmp,
+				}, () => {this.drawDots()});
+				break;
+		}
+	}
 
     render() {
         return (
             <View style={styles.container}>
-                <View style={styles.imageDesk}>
-                    <ImageBackground resizeMode={this.state.imageMode} source={this.state.imageSource}
-                                     style={styles.uploadImage}>
-                        {this.state.loadingBar}
-                    </ImageBackground>
+                <View onLayout={(e) => {this.setState({
+							imageContainer: {
+								width: e.nativeEvent.layout.width,
+								height: e.nativeEvent.layout.height,
+							}
+						})}} style={styles.imageDesk}>
+					<TouchableWithoutFeedback onPress={(e) => this.handleImageTouch(e)}>
+						<ImageBackground resizeMode={this.state.imageMode} source={this.state.imageSource}
+										 style={styles.uploadImage}>
+							{this.state.drawableDots}
+							{this.state.loadingBar}
+						</ImageBackground>
+					</TouchableWithoutFeedback>
                 </View>
                 <View style={styles.editPanel}>
                     {this.state.currentPanel}
@@ -672,6 +788,9 @@ export default class Editor extends React.Component {
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("usm")}>
                         <Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 16}}>USM</Text>
+                    </TouchableOpacity>
+					<TouchableOpacity onPress={this.dotsToImageCoordinates.bind(this)}>
+                        <Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 16}}>BL</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -727,5 +846,11 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         top: 0,
-    }
+    },
+	circle: {
+		width: 5,
+		height: 5,
+		borderRadius: 100/2,
+		position: "absolute",
+	}
 });
