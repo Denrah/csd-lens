@@ -559,13 +559,6 @@ export default class Editor extends React.Component {
         this.setState({
             loadingBar: loadingBar
         });
-		var binary_string =  atob(response.data);
-		var len = binary_string.length;
-		var bytes = new Uint8Array( len );
-		for (var i = 0; i < len; i++)        {
-			bytes[i] = binary_string.charCodeAt(i);
-		}
-		console.log(bytes.buffer);
         imageUtils.getPixelsArray(response.path).then(res => {
             this.setState({
                 pixels: res[0],
@@ -707,6 +700,117 @@ export default class Editor extends React.Component {
 		this.setState({
 			transformDotsCoordinates: tmp
 		});
+		
+		let x1 = this.state.transformDotsCoordinates.f1.x;
+		let x2 = this.state.transformDotsCoordinates.f2.x;
+		let x3 = this.state.transformDotsCoordinates.f3.x;
+		let y1 = this.state.transformDotsCoordinates.f1.y;
+		let y2 = this.state.transformDotsCoordinates.f2.y;
+		let y3 = this.state.transformDotsCoordinates.f3.y;
+		
+		let sx1 = this.state.transformDotsCoordinates.s1.x;
+		let sx2 = this.state.transformDotsCoordinates.s2.x;
+		let sx3 = this.state.transformDotsCoordinates.s3.x;
+		let sy1 = this.state.transformDotsCoordinates.s1.y;
+		let sy2 = this.state.transformDotsCoordinates.s2.y;
+		let sy3 = this.state.transformDotsCoordinates.s3.y;
+		
+		let det = sx1*sy2 + sx2*sy3 + sx3*sy1 - sx3*sy2 - sx2*sy1 - sx1*sy3;
+		
+		
+		let invertMatrix = [[(sy2-sy3)/det, (sx3-sx2)/det, (sx2*sy3-sy2*sx3)/det],
+							[(sy3-sy1)/det, (sx1-sx3)/det, (sx3*sy1-sx1*sy3)/det],
+							[(sy1-sy2)/det, (sx2-sx1)/det, (sx1*sy2-sx2*sy1)/det]];
+							
+	
+		
+		let transformMatrix =  [[x1*invertMatrix[0][0] + x2*invertMatrix[1][0] + x3*invertMatrix[2][0],
+								x1*invertMatrix[0][1] + x2*invertMatrix[1][1] + x3*invertMatrix[2][1],
+								x1*invertMatrix[0][2] + x2*invertMatrix[1][2] + x3*invertMatrix[2][2]],
+								[y1*invertMatrix[0][0] + y2*invertMatrix[1][0] + y3*invertMatrix[2][0],
+								y1*invertMatrix[0][1] + y2*invertMatrix[1][1] + y3*invertMatrix[2][1],
+								y1*invertMatrix[0][2] + y2*invertMatrix[1][2] + y3*invertMatrix[2][2]],
+								[1*invertMatrix[0][0] + 1*invertMatrix[1][0] + 1*invertMatrix[2][0],
+								1*invertMatrix[0][1] + 1*invertMatrix[1][1] + 1*invertMatrix[2][1],
+								1*invertMatrix[0][2] + 1*invertMatrix[1][2] + 1*invertMatrix[2][2]]];
+		
+		
+		let new_pixels = [];
+		
+		let delta = transformMatrix[0][0] * transformMatrix[1][1] - transformMatrix[0][1] * transformMatrix[1][0];
+		
+		for (let i = 0; i < this.state.width * this.state.height; i++) {
+                let pX = i % this.state.width;
+                let pY = parseInt(i / this.state.width);
+                
+				let npX = transformMatrix[0][0] * pX + transformMatrix[0][1] * pY + transformMatrix[0][2];
+				let npY = transformMatrix[1][0] * pX + transformMatrix[1][1] * pY + transformMatrix[1][2];
+
+				let newPix = Math.round(npY) * this.state.width + Math.round(npX);
+
+                if (Math.round(npX) >= 0 && Math.round(npX) < this.state.width && Math.round(npY) >= 0 && Math.round(npY) < this.state.height)
+				{
+					if(delta < 1)
+					{
+						let colors = [];
+						let r1 = 0, g1 = 0, b1 = 0;
+						let r2 = 0, g2 = 0, b2 = 0;
+						
+						newPix = Math.floor(npY) * this.state.width + Math.floor(npX);
+						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
+						r1 += color[0] * (Math.ceil(npX) - npX);
+						g1 += color[1] * (Math.ceil(npX) - npX);
+						b1 += color[2] * (Math.ceil(npX) - npX);
+						
+						newPix = Math.floor(npY) * this.state.width + Math.ceil(npX);
+						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
+						r1 += color[0] * (npX - Math.floor(npX));
+						g1 += color[1] * (npX - Math.floor(npX));
+						b1 += color[2] * (npX - Math.floor(npX));
+						
+						r1 *= (Math.ceil(npY) - npY);
+						g1 *= (Math.ceil(npY) - npY);
+						b1 *= (Math.ceil(npY) - npY);
+						
+						newPix = Math.ceil(npY) * this.state.width + Math.floor(npX);
+						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
+						r2 += color[0] * (Math.ceil(npX) - npX);
+						g2 += color[1] * (Math.ceil(npX) - npX);
+						b2 += color[2] * (Math.ceil(npX) - npX);
+						
+						newPix = Math.ceil(npY) * this.state.width + Math.ceil(npX);
+						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
+						r2 += color[0] * (npX - Math.floor(npX));
+						g2 += color[1] * (npX - Math.floor(npX));
+						b2 += color[2] * (npX - Math.floor(npX));
+						
+						r2 *= (npY - Math.floor(npY));
+						g2 *= (npY - Math.floor(npY));
+						b2 *= (npY - Math.floor(npY));
+						
+						
+						new_pixels[i] = imageUtils.RGBToInt([r1+r2, g1+g2, b1+b2, 1]);
+					}
+					else
+					{
+						new_pixels[i] = this.state.basePixels[newPix];
+					}
+				}
+                else
+                    new_pixels[i] = -1;
+            }
+
+			
+			this.setState({
+                pixels: new_pixels
+            });
+            imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+                this.setState({
+                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                    loadingBar: null
+                });
+            });
+
 
 	}
 	
