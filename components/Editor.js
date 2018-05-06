@@ -295,7 +295,7 @@ export default class Editor extends React.Component {
         });
     }
 
-    convolution(weights) {
+    convolution(weights, pixelsData) {
         let new_pixels = [];
         this.setState({
             loadingBar: loadingBar
@@ -303,7 +303,7 @@ export default class Editor extends React.Component {
 
         });
         if (weights.length == 1) {
-            return this.state.basePixels;
+            return pixelsData;
         }
         let side = Math.round(Math.sqrt(weights.length));
         let halfSide = Math.floor(side / 2);
@@ -317,10 +317,10 @@ export default class Editor extends React.Component {
                         if (scy >= 0 && scy < this.state.height && scx >= 0 && scx < this.state.width) {
                             let srcOff = (scy * this.state.width + scx);
                             let wt = weights[cy * side + cx];
-                            r += imageUtils.toColorArr(this.state.basePixels[srcOff])[0] * wt;
-                            g += imageUtils.toColorArr(this.state.basePixels[srcOff])[1] * wt;
-                            b += imageUtils.toColorArr(this.state.basePixels[srcOff])[2] * wt;
-                            a += imageUtils.toColorArr(this.state.basePixels[srcOff])[3] * wt;
+                            r += imageUtils.toColorArr(pixelsData[srcOff])[0] * wt;
+                            g += imageUtils.toColorArr(pixelsData[srcOff])[1] * wt;
+                            b += imageUtils.toColorArr(pixelsData[srcOff])[2] * wt;
+                            a += imageUtils.toColorArr(pixelsData[srcOff])[3] * wt;
                         }
                     }
                 }
@@ -432,7 +432,7 @@ export default class Editor extends React.Component {
         }
 
 
-        let blured_pixels = this.convolution(weights);
+        let blured_pixels = this.convolution(weights, this.state.basePixels);
 
         let new_pixels = [];
 
@@ -467,7 +467,7 @@ export default class Editor extends React.Component {
     sharp() {
         let new_pixels = this.convolution([-1, -1, -1,
             -1, 9, -1,
-            -1, -1, -1]);
+            -1, -1, -1], this.state.basePixels);
 
 
         this.setState({
@@ -484,7 +484,7 @@ export default class Editor extends React.Component {
     edgeDetection() {
         let new_pixels = this.convolution([0, 1, 0,
             1, -4, 1,
-            0, 1, 0]);
+            0, 1, 0], this.state.basePixels);
 
 
         this.setState({
@@ -501,7 +501,7 @@ export default class Editor extends React.Component {
     emboss() {
         let new_pixels = this.convolution([0, 1, 0,
             1, 0, -1,
-            0, -1, 0]);
+            0, -1, 0], this.state.basePixels);
 
         for (let i = 0; i < this.state.width * this.state.height; i++) {
 
@@ -528,14 +528,14 @@ export default class Editor extends React.Component {
     async sobel() {
         let new_pixels = this.convolution([-1, 0, 1,
             -2, 0, 2,
-            -1, 0, 1]);
+            -1, 0, 1], this.state.basePixels);
         await this.setState({
             pixels: new_pixels
         }, () => {
             setTimeout(() => {
                 new_pixels = this.convolution([-1, 0, 1,
                     -2, 0, 2,
-                    -1, 0, 1]);
+                    -1, 0, 1], new_pixels);
 
                 this.setState({
                     pixels: new_pixels
@@ -739,6 +739,44 @@ export default class Editor extends React.Component {
 		
 		let delta = transformMatrix[0][0] * transformMatrix[1][1] - transformMatrix[0][1] * transformMatrix[1][0];
 		
+		let dk = Math.sqrt(delta);
+		let p1, p2;
+		for(let i = 1; i < dk; i *= 2)
+		{
+			if(i*2 > k)
+			{
+				p1 = i;
+				p2 = i*2;
+			}
+		}
+		let pixels_size1 = [];
+		let pixels_size2 = [];
+		let tmp_p = this.state.basePixels;
+		let tmp_w = this.state.width;
+		let tmp_h = this.state.height;
+		for(let i = 2; i <= p2; i *= 2)
+		{
+			let t = this.convolution([1/16, 2/16, 1/16, 2/16, 4/16, 2/16, 1/16, 2/16, 1/16], tmp_p);
+			tmp_p = [];
+			for(let j = 0; j < (tmp_w/2) * (tmp_h/2); j++)
+			{
+				let tpX = (j % (tmp_w/2)) * 2;
+				let tpY = parseInt(j / (tmp_w/2)) * 2;
+				tmp_p[j] = t[tpY * tmp_w + tpX];				
+			}
+			tmp_w /= 2;
+			tmp_h /= 2;
+			
+			if(i == p1)
+			{
+				pixels_size1 = tmp_p;
+			}
+			if(i == p2)
+			{
+				pixels_size2 = tmp_p;
+			}
+		}
+		
 		for (let i = 0; i < this.state.width * this.state.height; i++) {
                 let pX = i % this.state.width;
                 let pY = parseInt(i / this.state.width);
@@ -789,10 +827,10 @@ export default class Editor extends React.Component {
 						b2 *= (npY - Math.floor(npY));
 						
 						
-						new_pixels[i] = imageUtils.RGBToInt([r1+r2, g1+g2, b1+b2, 1]);
+						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r1+r2, g1+g2, b1+b2, 1]));
 					}
 					else
-					{
+					{						
 						new_pixels[i] = this.state.basePixels[newPix];
 					}
 				}
@@ -804,7 +842,7 @@ export default class Editor extends React.Component {
 			this.setState({
                 pixels: new_pixels
             });
-            imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+            imageUtils.getBase64FromPixels(pixels_size1, tmp_w*2, tmp_h*2).then(res => {
                 this.setState({
                     imageSource: {uri: 'data:image/jpeg;base64,' + res},
                     loadingBar: null
