@@ -13,6 +13,7 @@ import {
 	TouchableWithoutFeedback
 } from 'react-native';
 import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
+import { WebGLView } from "react-native-webgl";
 import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
 import UnsharpMask from "./UnsharpMask";
@@ -901,6 +902,13 @@ export default class Editor extends React.Component {
 		}
 	}
 
+    onContextCreate = (gl: WebGLRenderingContext) => {
+        const rngl = gl.getExtension("RN");
+        gl.clearColor(1, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        rngl.endFrame();
+    };
+
     render() {
         return (
             <View style={styles.container}>
@@ -910,6 +918,10 @@ export default class Editor extends React.Component {
 								height: e.nativeEvent.layout.height,
 							}
 						})}} style={styles.imageDesk}>
+                   {/* <WebGLView
+                        style={{ width: 100, height: 100 }}
+                        onContextCreate={this.onContextCreate}
+                    />*/}
 					<TouchableWithoutFeedback onPress={(e) => this.handleImageTouch(e)}>
 						<ImageBackground resizeMode={this.state.imageMode} source={this.state.imageSource}
 										 style={styles.uploadImage}>
