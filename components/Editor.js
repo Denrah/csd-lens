@@ -757,7 +757,7 @@ export default class Editor extends React.Component {
 		let tmp_h = this.state.height;
 		for(let i = 2; i <= p2; i *= 2)
 		{
-			let t = this.convolution([1/16, 2/16, 1/16, 2/16, 4/16, 2/16, 1/16, 2/16, 1/16], tmp_p);
+			let t = this.convolution([0, 0, 0, 0, 1/4, 1/4, 0, 1/4, 1/4], tmp_p);
 			tmp_p = [];
 			for(let j = 0; j < (tmp_w/2) * (tmp_h/2); j++)
 			{
@@ -778,12 +778,15 @@ export default class Editor extends React.Component {
 			}
 		}
 		
+		
 		for (let i = 0; i < this.state.width * this.state.height; i++) {
                 let pX = i % this.state.width;
                 let pY = parseInt(i / this.state.width);
                 
 				let npX = transformMatrix[0][0] * pX + transformMatrix[0][1] * pY + transformMatrix[0][2];
 				let npY = transformMatrix[1][0] * pX + transformMatrix[1][1] * pY + transformMatrix[1][2];
+				
+				
 
 				let newPix = Math.round(npY) * this.state.width + Math.round(npX);
 
@@ -831,8 +834,16 @@ export default class Editor extends React.Component {
 						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r1+r2, g1+g2, b1+b2, 1]));
 					}
 					else
-					{						
-						new_pixels[i] = this.state.basePixels[newPix];
+					{			
+						let colorM = imageUtils.toColorArr(pixels_size2[Math.round(npY/p2) * tmp_w + Math.round(npX/p2)]);
+						let color2M = imageUtils.toColorArr(pixels_size1[Math.round(npY/p1) * tmp_w*2 + Math.round(npX/p1)]);
+						console.log(pixels_size2.length, Math.round(npY/p2) * tmp_w + Math.round(npX/p2), colorM,
+							pixels_size1.length, Math.round(npY/p1) * tmp_w*2 + Math.round(npX/p1), color2M);
+						
+						let r = Math.round((colorM[0]*(p1 - dk) + color2M[0]*(dk - p2))/p2);
+						let g = Math.round((colorM[1]*(p1 - dk) + color2M[1]*(dk - p2))/p2);
+						let b = Math.round((colorM[2]*(p1 - dk) + color2M[2]*(dk - p2))/p2);
+						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r, g, b, 1]));
 					}
 				}
                 else
@@ -843,7 +854,7 @@ export default class Editor extends React.Component {
 			this.setState({
                 pixels: new_pixels
             });
-            imageUtils.getBase64FromPixels(pixels_size1, tmp_w*2, tmp_h*2).then(res => {
+            imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
                 this.setState({
                     imageSource: {uri: 'data:image/jpeg;base64,' + res},
                     loadingBar: null
