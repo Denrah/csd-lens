@@ -10,13 +10,15 @@ import {
     TouchableOpacity,
     ScrollView,
     Slider,
-	TouchableWithoutFeedback
+	TouchableWithoutFeedback,
+	ToastAndroid
 } from 'react-native';
 import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
 import { WebGLView } from "react-native-webgl";
 import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
 import UnsharpMask from "./UnsharpMask";
+import LinearFiltration from "./LinearFiltration";
 
 
 let filters = require('../libs/filters.js');
@@ -65,7 +67,8 @@ export default class Editor extends React.Component {
             navigationColors: {
                 filters: "#00CF68",
                 sizeAndRot: "white",
-                unsharpMask: "white"
+                unsharpMask: "white",
+				linearFiltration: "white"
             },
 			transformDots: {
 				count: 0,
@@ -90,12 +93,20 @@ export default class Editor extends React.Component {
 			},
 			drawableDots: null,
             imageMode: "contain",
+			panelIndex: 1,
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
     }
 
     setResizeMode() {
+		
+		if(this.state.panelIndex == 4)
+		{
+			ToastAndroid.show("You can't set resize mode in linear filtration tool", ToastAndroid.LONG);
+			return;
+		}
+	
         if (this.state.imageMode === "contain")
 		{
             this.setState({imageMode: "cover"});
@@ -638,6 +649,34 @@ export default class Editor extends React.Component {
             //this.resize(size);
         });
     }
+	
+	linearFiltration(type)
+	{
+		switch(type) {
+			case "set":
+				this.dotsToImageCoordinates();
+				break;
+			case "clear":
+				this.setState({transformDots: {
+					count: 0,
+					f1: {x: -10, y: 0},
+					f2: {x: -10, y: 0},
+					f3: {x: -10, y: 0},
+					s1: {x: -10, y: 0},
+					s2: {x: -10, y: 0},
+					s3: {x: -10, y: 0}
+				},
+				transformDotsCoordinates: {
+					f1: {x: 0, y: 0},
+					f2: {x: 0, y: 0},
+					f3: {x: 0, y: 0},
+					s1: {x: 0, y: 0},
+					s2: {x: 0, y: 0},
+					s3: {x: 0, y: 0}
+				}}, () => {this.drawDots()});
+				break;
+		}
+	}
 
     choosePanel(panel) {
         switch (panel) {
@@ -647,8 +686,10 @@ export default class Editor extends React.Component {
                     navigationColors: {
                         filters: "#00CF68",
                         sizeAndRot: "white",
-                        unsharpMask: "white"
-                    }
+                        unsharpMask: "white",
+						linearFiltration: "white"
+                    },
+					panelIndex: 1
                 });
                 break;
             case "size":
@@ -657,8 +698,10 @@ export default class Editor extends React.Component {
                     navigationColors: {
                         filters: "white",
                         sizeAndRot: "#00CF68",
-                        unsharpMask: "white"
-                    }
+                        unsharpMask: "white",
+						linearFiltration: "white"
+                    },
+					panelIndex: 2
                 });
                 break;
             case "usm":
@@ -667,9 +710,25 @@ export default class Editor extends React.Component {
                     navigationColors: {
                         filters: "white",
                         sizeAndRot: "white",
-                        unsharpMask: "#00CF68"
-                    }
+                        unsharpMask: "#00CF68",
+						linearFiltration: "white"
+                    },
+					panelIndex: 3
                 });
+                break;
+			case "lin":
+                this.setState({
+                    currentPanel: <LinearFiltration callbackFunction={this.linearFiltration.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "white",
+						unsharpMask: "white",
+                        linearFiltration: "#00CF68"
+                    },
+					panelIndex: 4
+                });
+				if(this.state.imageMode == "cover")
+					this.setResizeMode();
                 break;
 
         }
@@ -790,7 +849,7 @@ export default class Editor extends React.Component {
 
 				let newPix = Math.round(npY) * this.state.width + Math.round(npX);
 
-                if (Math.round(npX) >= 0 && Math.round(npX) < this.state.width && Math.round(npY) >= 0 && Math.round(npY) < this.state.height)
+                if (Math.floor(npX) >= 0 && Math.ceil(npX) < this.state.width && Math.floor(npY) >= 0 && Math.ceil(npY) < this.state.height)
 				{
 					if(delta < 1)
 					{
@@ -800,9 +859,9 @@ export default class Editor extends React.Component {
 						
 						newPix = Math.floor(npY) * this.state.width + Math.floor(npX);
 						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
-						r1 += color[0] * (Math.ceil(npX) - npX);
-						g1 += color[1] * (Math.ceil(npX) - npX);
-						b1 += color[2] * (Math.ceil(npX) - npX);
+						r1 += color[0] * (1 - (npX - Math.floor(npX)));
+						g1 += color[1] * (1 - (npX - Math.floor(npX)));
+						b1 += color[2] * (1 - (npX - Math.floor(npX)));
 						
 						newPix = Math.floor(npY) * this.state.width + Math.ceil(npX);
 						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
@@ -810,15 +869,15 @@ export default class Editor extends React.Component {
 						g1 += color[1] * (npX - Math.floor(npX));
 						b1 += color[2] * (npX - Math.floor(npX));
 						
-						r1 *= (Math.ceil(npY) - npY);
-						g1 *= (Math.ceil(npY) - npY);
-						b1 *= (Math.ceil(npY) - npY);
+						r1 *= (1 - (npY - Math.floor(npY)));
+						g1 *= (1 - (npY - Math.floor(npY)));
+						b1 *= (1 - (npY - Math.floor(npY)));
 						
 						newPix = Math.ceil(npY) * this.state.width + Math.floor(npX);
 						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
-						r2 += color[0] * (Math.ceil(npX) - npX);
-						g2 += color[1] * (Math.ceil(npX) - npX);
-						b2 += color[2] * (Math.ceil(npX) - npX);
+						r2 += color[0] * (1 - (npX - Math.floor(npX)));
+						g2 += color[1] * (1 - (npX - Math.floor(npX)));
+						b2 += color[2] * (1 - (npX - Math.floor(npX)));
 						
 						newPix = Math.ceil(npY) * this.state.width + Math.ceil(npX);
 						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
@@ -832,17 +891,20 @@ export default class Editor extends React.Component {
 						
 						
 						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r1+r2, g1+g2, b1+b2, 1]));
+						
 					}
 					else
 					{			
-						let colorM = imageUtils.toColorArr(pixels_size2[Math.round(npY/p2) * tmp_w + Math.round(npX/p2)]);
-						let color2M = imageUtils.toColorArr(pixels_size1[Math.round(npY/p1) * tmp_w*2 + Math.round(npX/p1)]);
-						console.log(pixels_size2.length, Math.round(npY/p2) * tmp_w + Math.round(npX/p2), colorM,
-							pixels_size1.length, Math.round(npY/p1) * tmp_w*2 + Math.round(npX/p1), color2M);
+						let colorM = imageUtils.toColorArr(pixels_size1[Math.floor(Math.round(npY)/p1) * tmp_w*2 + Math.floor(Math.round(npX)/p1)]);
+						let color2M = imageUtils.toColorArr(pixels_size2[Math.floor(Math.round(npY)/p2) * tmp_w + Math.floor(Math.round(npX)/p2)]);
+						console.log(npX, npY, pixels_size2.length, Math.floor(Math.round(npY)/p1) * tmp_w*2 + Math.floor(Math.round(npX)/p1), colorM,
+							pixels_size1.length, Math.floor(Math.round(npY)/p2) * tmp_w + Math.floor(Math.round(npX)/p2), color2M);
 						
-						let r = Math.round((colorM[0]*(p1 - dk) + color2M[0]*(dk - p2))/p2);
-						let g = Math.round((colorM[1]*(p1 - dk) + color2M[1]*(dk - p2))/p2);
-						let b = Math.round((colorM[2]*(p1 - dk) + color2M[2]*(dk - p2))/p2);
+						let r = Math.round((colorM[0]*(p2 - dk) + color2M[0]*(dk - p1))/p1);
+						let g = Math.round((colorM[1]*(p2 - dk) + color2M[1]*(dk - p1))/p1);
+						let b = Math.round((colorM[2]*(p2 - dk) + color2M[2]*(dk - p1))/p1);
+						
+						console.log(r, g, b, p1, p2, dk);
 						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r, g, b, 1]));
 					}
 				}
@@ -865,6 +927,9 @@ export default class Editor extends React.Component {
 	}
 	
 	handleImageTouch(e) {
+		if(this.state.panelIndex != 4)
+			return;
+			
 		let tmp = this.state.transformDots;
 		switch(this.state.transformDots.count)
 		{
@@ -954,8 +1019,8 @@ export default class Editor extends React.Component {
                     <TouchableOpacity onPress={() => this.choosePanel("usm")}>
                         <Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 16}}>USM</Text>
                     </TouchableOpacity>
-					<TouchableOpacity onPress={this.dotsToImageCoordinates.bind(this)}>
-                        <Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 16}}>BL</Text>
+					<TouchableOpacity onPress={() => this.choosePanel("lin")}>
+                        <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 16}}>BL</Text>
                     </TouchableOpacity>
                 </View>
             </View>
