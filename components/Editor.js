@@ -88,12 +88,69 @@ export default class Editor extends React.Component {
 				width: 0,
 				height: 0
 			},
+			rngl: null,
+			gl: null,
 			drawableDots: null,
             imageMode: "contain",
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
     }
+	
+	updateImage(src, callback) {
+		this.state.gl.viewport(0, 0, this.state.gl.drawingBufferWidth, this.state.gl.drawingBufferHeight);
+		let buffer = this.state.gl.createBuffer();
+		this.state.gl.bindBuffer(this.state.gl.ARRAY_BUFFER, buffer);
+		this.state.gl.bufferData(
+		  this.state.gl.ARRAY_BUFFER,
+		  new Float32Array([-1, -1, -1, 4, 4, -1]),
+		  this.state.gl.STATIC_DRAW
+		);
+		let vertexShader = this.state.gl.createShader(this.state.gl.VERTEX_SHADER);
+		this.state.gl.shaderSource(
+		vertexShader,
+		`\
+			attribute vec2 p;
+			varying vec2 uv;
+			void main() {
+			  gl_Position = vec4(p,1.0,1.0);
+			  uv = 0.5 * (p+1.0);
+			}`
+		);
+		this.state.gl.compileShader(vertexShader);
+		const fragmentShader = this.state.gl.createShader(this.state.gl.FRAGMENT_SHADER);
+		this.state.gl.shaderSource(
+		  fragmentShader,
+		  `\
+			precision highp float;
+			varying vec2 uv;
+			uniform sampler2D t;
+			void main() {
+			  gl_FragColor = texture2D(t, uv);
+			}`
+		);
+		this.state.gl.compileShader(fragmentShader);
+		let program = this.state.gl.createProgram();
+		this.state.gl.attachShader(program, vertexShader);
+		this.state.gl.attachShader(program, fragmentShader);
+		this.state.gl.linkProgram(program);
+		this.state.gl.useProgram(program);
+		let p = this.state.gl.getAttribLocation(program, "p");
+		this.state.gl.enableVertexAttribArray(p);
+		this.state.gl.vertexAttribPointer(p, 2, this.state.gl.FLOAT, false, 0, 0);
+		 this.state.rngl
+		  .loadTexture({ image: src, yflip: true })
+		  .then(({ texture }) => {
+			this.state.gl.activeTexture(this.state.gl.TEXTURE0);
+			this.state.gl.bindTexture(this.state.gl.TEXTURE_2D, texture);
+			this.state.gl.drawArrays(this.state.gl.TRIANGLES, 0, 3);
+			this.state.gl.flush();
+			this.state.rngl.endFrame();
+		  });
+	  //
+		if(typeof callback == "function") 
+			callback();
+	}
 
     setResizeMode() {
         if (this.state.imageMode === "contain")
@@ -913,12 +970,21 @@ export default class Editor extends React.Component {
 		}
 	}
 
-    onContextCreate = (gl: WebGLRenderingContext) => {
-        const rngl = gl.getExtension("RN");
-        gl.clearColor(1, 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        rngl.endFrame();
-    };
+    /*onContextCreate = (gl: WebGLRenderingContext) => {
+		this.setState({
+			gl: gl,
+			rngl: gl.getExtension("RN")
+		}, () => {
+			let width = this.state.gl.drawingBufferWidth;
+			let height = this.state.gl.drawingBufferHeight;
+			let rngl = this.state.rngl;
+			let gl = this.state.gl;
+			this.updateImage("http://i.imgur.com/tCatS2c.jpg", function(){
+				var pixels = new Uint8Array(width * height * 4);
+				gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);//async
+			});		
+		});
+    };*/
 
     render() {
         return (
@@ -929,7 +995,7 @@ export default class Editor extends React.Component {
 								height: e.nativeEvent.layout.height,
 							}
 						})}} style={styles.imageDesk}>
-                   {/* <WebGLView
+					{/*<WebGLView
                         style={{ width: 100, height: 100 }}
                         onContextCreate={this.onContextCreate}
                     />*/}
