@@ -857,6 +857,19 @@ export default class Editor extends React.Component {
 		let delta = transformMatrix[0][0] * transformMatrix[1][1] - transformMatrix[0][1] * transformMatrix[1][0];
 		
 		let dk = Math.sqrt(delta);
+		let dkx = Math.sqrt((transformMatrix[0][2] - (transformMatrix[0][0] * (this.state.width-1) + transformMatrix[0][2]))*
+			(transformMatrix[0][2] - (transformMatrix[0][0] * (this.state.width-1) + transformMatrix[0][2])) + 
+			(transformMatrix[1][2] - (transformMatrix[1][0] * (this.state.width-1) + transformMatrix[1][2])) * 
+			(transformMatrix[1][2] - (transformMatrix[1][0] * (this.state.width-1) + transformMatrix[1][2])))/this.state.width;
+			
+		let dky = Math.sqrt((transformMatrix[0][2] - (transformMatrix[0][1] * (this.state.height-1) + transformMatrix[0][2]))*
+			(transformMatrix[0][2] - (transformMatrix[0][1] * (this.state.height-1) + transformMatrix[0][2])) + 
+			(transformMatrix[1][2] - (transformMatrix[1][1] * (this.state.height-1) + transformMatrix[1][2])) * 
+			(transformMatrix[1][2] - (transformMatrix[1][1] * (this.state.height-1) + transformMatrix[1][2])))/this.state.width;
+		let ddk = (dkx+dky)/2;
+		
+		
+		
 		let p1, p2;
 		for(let i = 1; i < dk; i *= 2)
 		{
@@ -871,6 +884,8 @@ export default class Editor extends React.Component {
 		let tmp_p = this.state.basePixels;
 		let tmp_w = this.state.width;
 		let tmp_h = this.state.height;
+		if(p1 == 1)
+			pixels_size1 = tmp_p;
 		for(let i = 2; i <= p2; i *= 2)
 		{
 			let t = this.convolution([0, 0, 0, 0, 1/4, 1/4, 0, 1/4, 1/4], tmp_p);
@@ -894,6 +909,8 @@ export default class Editor extends React.Component {
 			}
 		}
 		
+			
+		
 		
 		for (let i = 0; i < this.state.width * this.state.height; i++) {
                 let pX = i % this.state.width;
@@ -910,7 +927,7 @@ export default class Editor extends React.Component {
 				{
 					if(delta < 1)
 					{
-						let colors = [];
+						let color = [];
 						let r1 = 0, g1 = 0, b1 = 0;
 						let r2 = 0, g2 = 0, b2 = 0;
 						
@@ -952,17 +969,123 @@ export default class Editor extends React.Component {
 					}
 					else
 					{			
-						let colorM = imageUtils.toColorArr(pixels_size1[Math.floor(Math.round(npY)/p1) * tmp_w*2 + Math.floor(Math.round(npX)/p1)]);
-						let color2M = imageUtils.toColorArr(pixels_size2[Math.floor(Math.round(npY)/p2) * tmp_w + Math.floor(Math.round(npX)/p2)]);
-						console.log(npX, npY, pixels_size2.length, Math.floor(Math.round(npY)/p1) * tmp_w*2 + Math.floor(Math.round(npX)/p1), colorM,
-							pixels_size1.length, Math.floor(Math.round(npY)/p2) * tmp_w + Math.floor(Math.round(npX)/p2), color2M);
+					
+						let color = [];
+						let r1 = 0, g1 = 0, b1 = 0;
+						let r2 = 0, g2 = 0, b2 = 0;
 						
-						let r = Math.round((colorM[0]*(p2 - dk) + color2M[0]*(dk - p1))/p1);
-						let g = Math.round((colorM[1]*(p2 - dk) + color2M[1]*(dk - p1))/p1);
-						let b = Math.round((colorM[2]*(p2 - dk) + color2M[2]*(dk - p1))/p1);
+						newPix = Math.floor(npY/p1) * tmp_w*2 + Math.floor(npX/p1);
+						if(newPix >= pixels_size1.length)
+							color = [255, 255, 255, 1];
+						else
+							color = imageUtils.toColorArr(pixels_size1[newPix]);
+						r1 += color[0] * (1 - (npX - Math.floor(npX)));
+						g1 += color[1] * (1 - (npX - Math.floor(npX)));
+						b1 += color[2] * (1 - (npX - Math.floor(npX)));
 						
-						console.log(r, g, b, p1, p2, dk);
+						newPix = Math.floor(npY/p1) * tmp_w*2 + Math.ceil(npX/p1);
+						if(newPix >= pixels_size1.length)
+							color = [255, 255, 255, 1];
+						else
+							color = imageUtils.toColorArr(pixels_size1[newPix]);
+						r1 += color[0] * (npX - Math.floor(npX));
+						g1 += color[1] * (npX - Math.floor(npX));
+						b1 += color[2] * (npX - Math.floor(npX));
+						
+						r1 *= (1 - (npY - Math.floor(npY)));
+						g1 *= (1 - (npY - Math.floor(npY)));
+						b1 *= (1 - (npY - Math.floor(npY)));
+						
+						newPix = Math.ceil(npY/p1) * tmp_w*2 + Math.floor(npX/p1);
+						if(newPix >= pixels_size1.length)
+							color = [255, 255, 255, 1];
+						else
+							color = imageUtils.toColorArr(pixels_size1[newPix]);
+						r2 += color[0] * (1 - (npX - Math.floor(npX)));
+						g2 += color[1] * (1 - (npX - Math.floor(npX)));
+						b2 += color[2] * (1 - (npX - Math.floor(npX)));
+						
+						newPix = Math.ceil(npY/p1) * tmp_w*2 + Math.ceil(npX/p1);
+						if(newPix >= pixels_size1.length)
+							color = [255, 255, 255, 1];
+						else
+							color = imageUtils.toColorArr(pixels_size1[newPix]);
+						r2 += color[0] * (npX - Math.floor(npX));
+						g2 += color[1] * (npX - Math.floor(npX));
+						b2 += color[2] * (npX - Math.floor(npX));
+						
+						r2 *= (npY - Math.floor(npY));
+						g2 *= (npY - Math.floor(npY));
+						b2 *= (npY - Math.floor(npY));
+						
+						let tr1 = r1 + r2;
+						let tg1 = g1 + g2;
+						let tb1 = b1 + b2;
+						
+						r1 = 0;
+						g1 = 0;
+						b1 = 0;
+						r2 = 0;
+						g2 = 0;
+						b2 = 0;
+						
+						newPix = Math.floor(npY/p2) * tmp_w + Math.floor(npX/p2);
+						if(newPix >= pixels_size2.length)
+							color = [255, 255, 255, 1];
+						else
+							color = imageUtils.toColorArr(pixels_size2[newPix]);
+						r1 += color[0] * (1 - (npX - Math.floor(npX)));
+						g1 += color[1] * (1 - (npX - Math.floor(npX)));
+						b1 += color[2] * (1 - (npX - Math.floor(npX)));
+						
+						newPix = Math.floor(npY/p2) * tmp_w + Math.ceil(npX/p2);
+						if(newPix >= pixels_size2.length)
+							color = [255, 255, 255, 1];
+						else
+							color = imageUtils.toColorArr(pixels_size2[newPix]);
+						r1 += color[0] * (npX - Math.floor(npX));
+						g1 += color[1] * (npX - Math.floor(npX));
+						b1 += color[2] * (npX - Math.floor(npX));
+						
+						r1 *= (1 - (npY - Math.floor(npY)));
+						g1 *= (1 - (npY - Math.floor(npY)));
+						b1 *= (1 - (npY - Math.floor(npY)));
+						
+						newPix = Math.ceil(npY/p2) * tmp_w + Math.floor(npX/p2);
+						if(newPix >= pixels_size2.length)
+							color = [255, 255, 255, 1];
+						else
+							color = imageUtils.toColorArr(pixels_size2[newPix]);
+						r2 += color[0] * (1 - (npX - Math.floor(npX)));
+						g2 += color[1] * (1 - (npX - Math.floor(npX)));
+						b2 += color[2] * (1 - (npX - Math.floor(npX)));
+						
+						newPix = Math.ceil(npY/p2) * tmp_w + Math.ceil(npX/p2);
+						
+						if(newPix >= pixels_size2.length)
+							color = [255, 255, 255, 1];
+						else
+							color = imageUtils.toColorArr(pixels_size2[newPix]);
+						r2 += color[0] * (npX - Math.floor(npX));
+						g2 += color[1] * (npX - Math.floor(npX));
+						b2 += color[2] * (npX - Math.floor(npX));
+						
+						r2 *= (npY - Math.floor(npY));
+						g2 *= (npY - Math.floor(npY));
+						b2 *= (npY - Math.floor(npY));
+						
+						let tr2 = r1 + r2;
+						let tg2 = g1 + g2;
+						let tb2 = b1 + b2;
+						
+
+						let r = Math.round((tr1*(p2 - dk) + tr2*(dk - p1))/p1);
+						let g = Math.round((tg1*(p2 - dk) + tg2*(dk - p1))/p1);
+						let b = Math.round((tb1*(p2 - dk) + tb2*(dk - p1))/p1);
+						
 						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r, g, b, 1]));
+						if(r < 250)
+							console.log(pixels_size2.length, tmp_w, tmp_h, Math.round(npY/p2) * tmp_w + Math.round(npX/p2));
 					}
 				}
                 else
