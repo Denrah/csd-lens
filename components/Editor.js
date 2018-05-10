@@ -371,7 +371,7 @@ export default class Editor extends React.Component {
         }, () => {
 
         });
-        if (weights.length == 1) {
+        if (weights.length === 1) {
             return pixelsData;
         }
         let side = Math.round(Math.sqrt(weights.length));
@@ -884,32 +884,32 @@ export default class Editor extends React.Component {
 		let tmp_p = this.state.basePixels;
 		let tmp_w = this.state.width;
 		let tmp_h = this.state.height;
-		if(p1 == 1)
+		if(p1 === 1)
 			pixels_size1 = tmp_p;
 		for(let i = 2; i <= p2; i *= 2)
 		{
 			let t = this.convolution([0, 0, 0, 0, 1/4, 1/4, 0, 1/4, 1/4], tmp_p);
 			tmp_p = [];
-			for(let j = 0; j < (tmp_w/2) * (tmp_h/2); j++)
+			for(let j = 0; j < Math.floor(tmp_w/2) * Math.floor(tmp_h/2); j++)
 			{
-				let tpX = (j % (tmp_w/2)) * 2;
-				let tpY = parseInt(j / (tmp_w/2)) * 2;
-				tmp_p[j] = t[tpY * tmp_w + tpX];				
+				let tpX = (j % Math.floor(tmp_w/2)) * 2;
+				let tpY = parseInt(j / Math.floor(tmp_w/2)) * 2;
+				tmp_p[j] = t[tpY * tmp_w + tpX];
 			}
 			tmp_w /= 2;
 			tmp_h /= 2;
+
 			
-			if(i == p1)
+			if(i === p1)
 			{
 				pixels_size1 = tmp_p;
 			}
-			if(i == p2)
+			if(i === p2)
 			{
 				pixels_size2 = tmp_p;
 			}
+
 		}
-		
-			
 		
 		
 		for (let i = 0; i < this.state.width * this.state.height; i++) {
@@ -1084,8 +1084,6 @@ export default class Editor extends React.Component {
 						let b = Math.round((tb1*(p2 - dk) + tb2*(dk - p1))/p1);
 						
 						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r, g, b, 1]));
-						if(r < 250)
-							console.log(pixels_size2.length, tmp_w, tmp_h, Math.round(npY/p2) * tmp_w + Math.round(npX/p2));
 					}
 				}
                 else
