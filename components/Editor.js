@@ -10,11 +10,11 @@ import {
     TouchableOpacity,
     ScrollView,
     Slider,
-	TouchableWithoutFeedback,
-	ToastAndroid
+    TouchableWithoutFeedback,
+    ToastAndroid
 } from 'react-native';
 import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
-import { WebGLView } from "react-native-webgl";
+import {WebGLView} from "react-native-webgl";
 import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
 import UnsharpMask from "./UnsharpMask";
@@ -68,112 +68,109 @@ export default class Editor extends React.Component {
                 filters: "#00CF68",
                 sizeAndRot: "white",
                 unsharpMask: "white",
-				linearFiltration: "white"
+                linearFiltration: "white"
             },
-			transformDots: {
-				count: 0,
-				f1: {x: -10, y: 0},
-				f2: {x: -10, y: 0},
-				f3: {x: -10, y: 0},
-				s1: {x: -10, y: 0},
-				s2: {x: -10, y: 0},
-				s3: {x: -10, y: 0}
-			},
-			transformDotsCoordinates: {
-				f1: {x: 0, y: 0},
-				f2: {x: 0, y: 0},
-				f3: {x: 0, y: 0},
-				s1: {x: 0, y: 0},
-				s2: {x: 0, y: 0},
-				s3: {x: 0, y: 0}
-			},
-			imageContainer: {
-				width: 0,
-				height: 0
-			},
-			rngl: null,
-			gl: null,
-			drawableDots: null,
+            transformDots: {
+                count: 0,
+                f1: {x: -10, y: 0},
+                f2: {x: -10, y: 0},
+                f3: {x: -10, y: 0},
+                s1: {x: -10, y: 0},
+                s2: {x: -10, y: 0},
+                s3: {x: -10, y: 0}
+            },
+            transformDotsCoordinates: {
+                f1: {x: 0, y: 0},
+                f2: {x: 0, y: 0},
+                f3: {x: 0, y: 0},
+                s1: {x: 0, y: 0},
+                s2: {x: 0, y: 0},
+                s3: {x: 0, y: 0}
+            },
+            imageContainer: {
+                width: 0,
+                height: 0
+            },
+            rngl: null,
+            gl: null,
+            drawableDots: null,
             imageMode: "contain",
-			panelIndex: 1,
+            panelIndex: 1,
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
     }
-	
-	updateImage(src, callback) {
-		this.state.gl.viewport(0, 0, this.state.gl.drawingBufferWidth, this.state.gl.drawingBufferHeight);
-		let buffer = this.state.gl.createBuffer();
-		this.state.gl.bindBuffer(this.state.gl.ARRAY_BUFFER, buffer);
-		this.state.gl.bufferData(
-		  this.state.gl.ARRAY_BUFFER,
-		  new Float32Array([-1, -1, -1, 4, 4, -1]),
-		  this.state.gl.STATIC_DRAW
-		);
-		let vertexShader = this.state.gl.createShader(this.state.gl.VERTEX_SHADER);
-		this.state.gl.shaderSource(
-		vertexShader,
-		`\
+
+    updateImage(src, callback) {
+        this.state.gl.viewport(0, 0, this.state.gl.drawingBufferWidth, this.state.gl.drawingBufferHeight);
+        let buffer = this.state.gl.createBuffer();
+        this.state.gl.bindBuffer(this.state.gl.ARRAY_BUFFER, buffer);
+        this.state.gl.bufferData(
+            this.state.gl.ARRAY_BUFFER,
+            new Float32Array([-1, -1, -1, 4, 4, -1]),
+            this.state.gl.STATIC_DRAW
+        );
+        let vertexShader = this.state.gl.createShader(this.state.gl.VERTEX_SHADER);
+        this.state.gl.shaderSource(
+            vertexShader,
+            `\
 			attribute vec2 p;
 			varying vec2 uv;
 			void main() {
 			  gl_Position = vec4(p,1.0,1.0);
 			  uv = 0.5 * (p+1.0);
 			}`
-		);
-		this.state.gl.compileShader(vertexShader);
-		const fragmentShader = this.state.gl.createShader(this.state.gl.FRAGMENT_SHADER);
-		this.state.gl.shaderSource(
-		  fragmentShader,
-		  `\
+        );
+        this.state.gl.compileShader(vertexShader);
+        const fragmentShader = this.state.gl.createShader(this.state.gl.FRAGMENT_SHADER);
+        this.state.gl.shaderSource(
+            fragmentShader,
+            `\
 			precision highp float;
 			varying vec2 uv;
 			uniform sampler2D t;
 			void main() {
 			  gl_FragColor = texture2D(t, uv);
 			}`
-		);
-		this.state.gl.compileShader(fragmentShader);
-		let program = this.state.gl.createProgram();
-		this.state.gl.attachShader(program, vertexShader);
-		this.state.gl.attachShader(program, fragmentShader);
-		this.state.gl.linkProgram(program);
-		this.state.gl.useProgram(program);
-		let p = this.state.gl.getAttribLocation(program, "p");
-		this.state.gl.enableVertexAttribArray(p);
-		this.state.gl.vertexAttribPointer(p, 2, this.state.gl.FLOAT, false, 0, 0);
-		 this.state.rngl
-		  .loadTexture({ image: src, yflip: true })
-		  .then(({ texture }) => {
-			this.state.gl.activeTexture(this.state.gl.TEXTURE0);
-			this.state.gl.bindTexture(this.state.gl.TEXTURE_2D, texture);
-			this.state.gl.drawArrays(this.state.gl.TRIANGLES, 0, 3);
-			this.state.gl.flush();
-			this.state.rngl.endFrame();
-		  });
-	  //
-		if(typeof callback == "function") 
-			callback();
-	}
+        );
+        this.state.gl.compileShader(fragmentShader);
+        let program = this.state.gl.createProgram();
+        this.state.gl.attachShader(program, vertexShader);
+        this.state.gl.attachShader(program, fragmentShader);
+        this.state.gl.linkProgram(program);
+        this.state.gl.useProgram(program);
+        let p = this.state.gl.getAttribLocation(program, "p");
+        this.state.gl.enableVertexAttribArray(p);
+        this.state.gl.vertexAttribPointer(p, 2, this.state.gl.FLOAT, false, 0, 0);
+        this.state.rngl
+            .loadTexture({image: src, yflip: true})
+            .then(({texture}) => {
+                this.state.gl.activeTexture(this.state.gl.TEXTURE0);
+                this.state.gl.bindTexture(this.state.gl.TEXTURE_2D, texture);
+                this.state.gl.drawArrays(this.state.gl.TRIANGLES, 0, 3);
+                this.state.gl.flush();
+                this.state.rngl.endFrame();
+            });
+        //
+        if (typeof callback == "function")
+            callback();
+    }
 
     setResizeMode() {
-		
-		if(this.state.panelIndex == 4)
-		{
-			ToastAndroid.show("You can't set resize mode in linear filtration tool", ToastAndroid.LONG);
-			return;
-		}
-	
-        if (this.state.imageMode === "contain")
-		{
+
+        if (this.state.panelIndex == 4) {
+            ToastAndroid.show("You can't set resize mode in linear filtration tool", ToastAndroid.LONG);
+            return;
+        }
+
+        if (this.state.imageMode === "contain") {
             this.setState({imageMode: "cover"});
-			this.props.navigation.setParams({resizeImage: require('../assets/ui/min_size.png')});
-		}
-        else
-		{
+            this.props.navigation.setParams({resizeImage: require('../assets/ui/min_size.png')});
+        }
+        else {
             this.setState({imageMode: "contain"});
-			this.props.navigation.setParams({resizeImage: require('../assets/ui/full_size.png')});
-		}
+            this.props.navigation.setParams({resizeImage: require('../assets/ui/full_size.png')});
+        }
     }
 
     sepia() {
@@ -620,7 +617,10 @@ export default class Editor extends React.Component {
     }
 
     componentDidMount() {
-        this.props.navigation.setParams({setResizeMode: this.setResizeMode, resizeImage: require('../assets/ui/full_size.png')});
+        this.props.navigation.setParams({
+            setResizeMode: this.setResizeMode,
+            resizeImage: require('../assets/ui/full_size.png')
+        });
         this.choosePanel("filter");
         const {params} = this.props.navigation.state;
         response = params.response;
@@ -706,34 +706,38 @@ export default class Editor extends React.Component {
             //this.resize(size);
         });
     }
-	
-	linearFiltration(type)
-	{
-		switch(type) {
-			case "set":
-				this.dotsToImageCoordinates();
-				break;
-			case "clear":
-				this.setState({transformDots: {
-					count: 0,
-					f1: {x: -10, y: 0},
-					f2: {x: -10, y: 0},
-					f3: {x: -10, y: 0},
-					s1: {x: -10, y: 0},
-					s2: {x: -10, y: 0},
-					s3: {x: -10, y: 0}
-				},
-				transformDotsCoordinates: {
-					f1: {x: 0, y: 0},
-					f2: {x: 0, y: 0},
-					f3: {x: 0, y: 0},
-					s1: {x: 0, y: 0},
-					s2: {x: 0, y: 0},
-					s3: {x: 0, y: 0}
-				}}, () => {this.drawDots()});
-				break;
-		}
-	}
+
+    linearFiltration(type) {
+        switch (type) {
+            case "set":
+                this.dotsToImageCoordinates();
+                break;
+            case "clear":
+                this.setState({
+                    currentPanel: <LinearFiltration dotsCount={0} callbackFunction={this.linearFiltration.bind(this)}/>,
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    }
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+        }
+    }
 
     choosePanel(panel) {
         switch (panel) {
@@ -744,9 +748,9 @@ export default class Editor extends React.Component {
                         filters: "#00CF68",
                         sizeAndRot: "white",
                         unsharpMask: "white",
-						linearFiltration: "white"
+                        linearFiltration: "white"
                     },
-					panelIndex: 1
+                    panelIndex: 1
                 });
                 break;
             case "size":
@@ -756,9 +760,9 @@ export default class Editor extends React.Component {
                         filters: "white",
                         sizeAndRot: "#00CF68",
                         unsharpMask: "white",
-						linearFiltration: "white"
+                        linearFiltration: "white"
                     },
-					panelIndex: 2
+                    panelIndex: 2
                 });
                 break;
             case "usm":
@@ -768,393 +772,423 @@ export default class Editor extends React.Component {
                         filters: "white",
                         sizeAndRot: "white",
                         unsharpMask: "#00CF68",
-						linearFiltration: "white"
+                        linearFiltration: "white"
                     },
-					panelIndex: 3
+                    panelIndex: 3
                 });
                 break;
-			case "lin":
+            case "lin":
                 this.setState({
-                    currentPanel: <LinearFiltration callbackFunction={this.linearFiltration.bind(this)}/>,
+                    currentPanel: <LinearFiltration dotsCount={this.state.transformDots.count} callbackFunction={this.linearFiltration.bind(this)}/>,
                     navigationColors: {
                         filters: "white",
                         sizeAndRot: "white",
-						unsharpMask: "white",
+                        unsharpMask: "white",
                         linearFiltration: "#00CF68"
                     },
-					panelIndex: 4
+                    panelIndex: 4
                 });
-				if(this.state.imageMode == "cover")
-					this.setResizeMode();
+                if (this.state.imageMode === "cover")
+                    this.setResizeMode();
                 break;
 
         }
     }
-	
-	drawDots() {
-		this.setState({
-			drawableDots: (
-				<View style={{position: "absolute", top: 0, bottom: 0, left: 0, right: 0}}>
-					<View style={[styles.circle, {backgroundColor: '#00CF68', left: this.state.transformDots.f1.x-2, top: this.state.transformDots.f1.y-2}]} />
-					<View style={[styles.circle, {backgroundColor: '#00CF68', left: this.state.transformDots.f2.x-2, top: this.state.transformDots.f2.y-2}]} />
-					<View style={[styles.circle, {backgroundColor: '#00CF68', left: this.state.transformDots.f3.x-2, top: this.state.transformDots.f3.y-2}]} />
-					<View style={[styles.circle, {backgroundColor: 'red', left: this.state.transformDots.s1.x-2, top: this.state.transformDots.s1.y-2}]} />
-					<View style={[styles.circle, {backgroundColor: 'red', left: this.state.transformDots.s2.x-2, top: this.state.transformDots.s2.y-2}]} />
-					<View style={[styles.circle, {backgroundColor: 'red', left: this.state.transformDots.s3.x-2, top: this.state.transformDots.s3.y-2}]} />
-				</View>
-			)
-		});
-	}
-	
-	dotsToImageCoordinates() {
-		let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
-		let tmp = this.state.transformDotsCoordinates;
-		for(let key in this.state.transformDotsCoordinates)
-		{
-			tmp[key].x = Math.round(this.state.transformDots[key].x * k - Math.max((this.state.imageContainer.width * k - this.state.width)/2, 0));
-			tmp[key].y = Math.round(this.state.transformDots[key].y * k - Math.max((this.state.imageContainer.height * k - this.state.height)/2, 0));
-		}
-		this.setState({
-			transformDotsCoordinates: tmp
-		});
-		
-		let x1 = this.state.transformDotsCoordinates.f1.x;
-		let x2 = this.state.transformDotsCoordinates.f2.x;
-		let x3 = this.state.transformDotsCoordinates.f3.x;
-		let y1 = this.state.transformDotsCoordinates.f1.y;
-		let y2 = this.state.transformDotsCoordinates.f2.y;
-		let y3 = this.state.transformDotsCoordinates.f3.y;
-		
-		let sx1 = this.state.transformDotsCoordinates.s1.x;
-		let sx2 = this.state.transformDotsCoordinates.s2.x;
-		let sx3 = this.state.transformDotsCoordinates.s3.x;
-		let sy1 = this.state.transformDotsCoordinates.s1.y;
-		let sy2 = this.state.transformDotsCoordinates.s2.y;
-		let sy3 = this.state.transformDotsCoordinates.s3.y;
-		
-		let det = sx1*sy2 + sx2*sy3 + sx3*sy1 - sx3*sy2 - sx2*sy1 - sx1*sy3;
-		
-		
-		let invertMatrix = [[(sy2-sy3)/det, (sx3-sx2)/det, (sx2*sy3-sy2*sx3)/det],
-							[(sy3-sy1)/det, (sx1-sx3)/det, (sx3*sy1-sx1*sy3)/det],
-							[(sy1-sy2)/det, (sx2-sx1)/det, (sx1*sy2-sx2*sy1)/det]];
-							
-	
-		
-		let transformMatrix =  [[x1*invertMatrix[0][0] + x2*invertMatrix[1][0] + x3*invertMatrix[2][0],
-								x1*invertMatrix[0][1] + x2*invertMatrix[1][1] + x3*invertMatrix[2][1],
-								x1*invertMatrix[0][2] + x2*invertMatrix[1][2] + x3*invertMatrix[2][2]],
-								[y1*invertMatrix[0][0] + y2*invertMatrix[1][0] + y3*invertMatrix[2][0],
-								y1*invertMatrix[0][1] + y2*invertMatrix[1][1] + y3*invertMatrix[2][1],
-								y1*invertMatrix[0][2] + y2*invertMatrix[1][2] + y3*invertMatrix[2][2]],
-								[1*invertMatrix[0][0] + 1*invertMatrix[1][0] + 1*invertMatrix[2][0],
-								1*invertMatrix[0][1] + 1*invertMatrix[1][1] + 1*invertMatrix[2][1],
-								1*invertMatrix[0][2] + 1*invertMatrix[1][2] + 1*invertMatrix[2][2]]];
-		
-		
-		let new_pixels = [];
-		
-		let delta = transformMatrix[0][0] * transformMatrix[1][1] - transformMatrix[0][1] * transformMatrix[1][0];
-		
-		let dk = Math.sqrt(delta);
-		let dkx = Math.sqrt((transformMatrix[0][2] - (transformMatrix[0][0] * (this.state.width-1) + transformMatrix[0][2]))*
-			(transformMatrix[0][2] - (transformMatrix[0][0] * (this.state.width-1) + transformMatrix[0][2])) + 
-			(transformMatrix[1][2] - (transformMatrix[1][0] * (this.state.width-1) + transformMatrix[1][2])) * 
-			(transformMatrix[1][2] - (transformMatrix[1][0] * (this.state.width-1) + transformMatrix[1][2])))/this.state.width;
-			
-		let dky = Math.sqrt((transformMatrix[0][2] - (transformMatrix[0][1] * (this.state.height-1) + transformMatrix[0][2]))*
-			(transformMatrix[0][2] - (transformMatrix[0][1] * (this.state.height-1) + transformMatrix[0][2])) + 
-			(transformMatrix[1][2] - (transformMatrix[1][1] * (this.state.height-1) + transformMatrix[1][2])) * 
-			(transformMatrix[1][2] - (transformMatrix[1][1] * (this.state.height-1) + transformMatrix[1][2])))/this.state.width;
-		let ddk = (dkx+dky)/2;
-		
-		
-		
-		let p1, p2;
-		for(let i = 1; i < dk; i *= 2)
-		{
-			if(i*2 > k)
-			{
-				p1 = i;
-				p2 = i*2;
-			}
-		}
-		let pixels_size1 = [];
-		let pixels_size2 = [];
-		let tmp_p = this.state.basePixels;
-		let tmp_w = this.state.width;
-		let tmp_h = this.state.height;
-		if(p1 === 1)
-			pixels_size1 = tmp_p;
-		for(let i = 2; i <= p2; i *= 2)
-		{
-			let t = this.convolution([0, 0, 0, 0, 1/4, 1/4, 0, 1/4, 1/4], tmp_p);
-			tmp_p = [];
-			for(let j = 0; j < Math.floor(tmp_w/2) * Math.floor(tmp_h/2); j++)
-			{
-				let tpX = (j % Math.floor(tmp_w/2)) * 2;
-				let tpY = parseInt(j / Math.floor(tmp_w/2)) * 2;
-				tmp_p[j] = t[tpY * tmp_w + tpX];
-			}
-			tmp_w /= 2;
-			tmp_h /= 2;
 
-			
-			if(i === p1)
-			{
-				pixels_size1 = tmp_p;
-			}
-			if(i === p2)
-			{
-				pixels_size2 = tmp_p;
-			}
+    drawDots() {
+        this.setState({
+            drawableDots: (
+                <View style={{position: "absolute", top: 0, bottom: 0, left: 0, right: 0}}>
+                    <View style={[styles.circle, {
+                        backgroundColor: '#00CF68',
+                        left: this.state.transformDots.f1.x - 2,
+                        top: this.state.transformDots.f1.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: '#00CF68',
+                        left: this.state.transformDots.f2.x - 2,
+                        top: this.state.transformDots.f2.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: '#00CF68',
+                        left: this.state.transformDots.f3.x - 2,
+                        top: this.state.transformDots.f3.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: 'red',
+                        left: this.state.transformDots.s1.x - 2,
+                        top: this.state.transformDots.s1.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: 'red',
+                        left: this.state.transformDots.s2.x - 2,
+                        top: this.state.transformDots.s2.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: 'red',
+                        left: this.state.transformDots.s3.x - 2,
+                        top: this.state.transformDots.s3.y - 2
+                    }]}/>
+                </View>
+            )
+        });
+    }
 
-		}
-		
-		
-		for (let i = 0; i < this.state.width * this.state.height; i++) {
-                let pX = i % this.state.width;
-                let pY = parseInt(i / this.state.width);
-                
-				let npX = transformMatrix[0][0] * pX + transformMatrix[0][1] * pY + transformMatrix[0][2];
-				let npY = transformMatrix[1][0] * pX + transformMatrix[1][1] * pY + transformMatrix[1][2];
-				
-				
+    bilinearFilter(npX, npY, matrix, w) {
+        let color = [];
+        let r1 = 0, g1 = 0, b1 = 0;
+        let r2 = 0, g2 = 0, b2 = 0;
 
-				let newPix = Math.round(npY) * this.state.width + Math.round(npX);
+        newPix = Math.floor(npY) * w + Math.floor(npX);
+        color = imageUtils.toColorArr(matrix[newPix]);
+        r1 += color[0] * (1 - (npX - Math.floor(npX)));
+        g1 += color[1] * (1 - (npX - Math.floor(npX)));
+        b1 += color[2] * (1 - (npX - Math.floor(npX)));
 
-                if (Math.floor(npX) >= 0 && Math.ceil(npX) < this.state.width && Math.floor(npY) >= 0 && Math.ceil(npY) < this.state.height)
-				{
-					if(delta < 1)
-					{
-						let color = [];
-						let r1 = 0, g1 = 0, b1 = 0;
-						let r2 = 0, g2 = 0, b2 = 0;
-						
-						newPix = Math.floor(npY) * this.state.width + Math.floor(npX);
-						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
-						r1 += color[0] * (1 - (npX - Math.floor(npX)));
-						g1 += color[1] * (1 - (npX - Math.floor(npX)));
-						b1 += color[2] * (1 - (npX - Math.floor(npX)));
-						
-						newPix = Math.floor(npY) * this.state.width + Math.ceil(npX);
-						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
-						r1 += color[0] * (npX - Math.floor(npX));
-						g1 += color[1] * (npX - Math.floor(npX));
-						b1 += color[2] * (npX - Math.floor(npX));
-						
-						r1 *= (1 - (npY - Math.floor(npY)));
-						g1 *= (1 - (npY - Math.floor(npY)));
-						b1 *= (1 - (npY - Math.floor(npY)));
-						
-						newPix = Math.ceil(npY) * this.state.width + Math.floor(npX);
-						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
-						r2 += color[0] * (1 - (npX - Math.floor(npX)));
-						g2 += color[1] * (1 - (npX - Math.floor(npX)));
-						b2 += color[2] * (1 - (npX - Math.floor(npX)));
-						
-						newPix = Math.ceil(npY) * this.state.width + Math.ceil(npX);
-						color = imageUtils.toColorArr(this.state.basePixels[newPix]);
-						r2 += color[0] * (npX - Math.floor(npX));
-						g2 += color[1] * (npX - Math.floor(npX));
-						b2 += color[2] * (npX - Math.floor(npX));
-						
-						r2 *= (npY - Math.floor(npY));
-						g2 *= (npY - Math.floor(npY));
-						b2 *= (npY - Math.floor(npY));
-						
-						
-						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r1+r2, g1+g2, b1+b2, 1]));
-						
-					}
-					else
-					{			
-					
-						let color = [];
-						let r1 = 0, g1 = 0, b1 = 0;
-						let r2 = 0, g2 = 0, b2 = 0;
-						
-						newPix = Math.floor(npY/p1) * tmp_w*2 + Math.floor(npX/p1);
-						if(newPix >= pixels_size1.length)
-							color = [255, 255, 255, 1];
-						else
-							color = imageUtils.toColorArr(pixels_size1[newPix]);
-						r1 += color[0] * (1 - (npX - Math.floor(npX)));
-						g1 += color[1] * (1 - (npX - Math.floor(npX)));
-						b1 += color[2] * (1 - (npX - Math.floor(npX)));
-						
-						newPix = Math.floor(npY/p1) * tmp_w*2 + Math.ceil(npX/p1);
-						if(newPix >= pixels_size1.length)
-							color = [255, 255, 255, 1];
-						else
-							color = imageUtils.toColorArr(pixels_size1[newPix]);
-						r1 += color[0] * (npX - Math.floor(npX));
-						g1 += color[1] * (npX - Math.floor(npX));
-						b1 += color[2] * (npX - Math.floor(npX));
-						
-						r1 *= (1 - (npY - Math.floor(npY)));
-						g1 *= (1 - (npY - Math.floor(npY)));
-						b1 *= (1 - (npY - Math.floor(npY)));
-						
-						newPix = Math.ceil(npY/p1) * tmp_w*2 + Math.floor(npX/p1);
-						if(newPix >= pixels_size1.length)
-							color = [255, 255, 255, 1];
-						else
-							color = imageUtils.toColorArr(pixels_size1[newPix]);
-						r2 += color[0] * (1 - (npX - Math.floor(npX)));
-						g2 += color[1] * (1 - (npX - Math.floor(npX)));
-						b2 += color[2] * (1 - (npX - Math.floor(npX)));
-						
-						newPix = Math.ceil(npY/p1) * tmp_w*2 + Math.ceil(npX/p1);
-						if(newPix >= pixels_size1.length)
-							color = [255, 255, 255, 1];
-						else
-							color = imageUtils.toColorArr(pixels_size1[newPix]);
-						r2 += color[0] * (npX - Math.floor(npX));
-						g2 += color[1] * (npX - Math.floor(npX));
-						b2 += color[2] * (npX - Math.floor(npX));
-						
-						r2 *= (npY - Math.floor(npY));
-						g2 *= (npY - Math.floor(npY));
-						b2 *= (npY - Math.floor(npY));
-						
-						let tr1 = r1 + r2;
-						let tg1 = g1 + g2;
-						let tb1 = b1 + b2;
-						
-						r1 = 0;
-						g1 = 0;
-						b1 = 0;
-						r2 = 0;
-						g2 = 0;
-						b2 = 0;
-						
-						newPix = Math.floor(npY/p2) * tmp_w + Math.floor(npX/p2);
-						if(newPix >= pixels_size2.length)
-							color = [255, 255, 255, 1];
-						else
-							color = imageUtils.toColorArr(pixels_size2[newPix]);
-						r1 += color[0] * (1 - (npX - Math.floor(npX)));
-						g1 += color[1] * (1 - (npX - Math.floor(npX)));
-						b1 += color[2] * (1 - (npX - Math.floor(npX)));
-						
-						newPix = Math.floor(npY/p2) * tmp_w + Math.ceil(npX/p2);
-						if(newPix >= pixels_size2.length)
-							color = [255, 255, 255, 1];
-						else
-							color = imageUtils.toColorArr(pixels_size2[newPix]);
-						r1 += color[0] * (npX - Math.floor(npX));
-						g1 += color[1] * (npX - Math.floor(npX));
-						b1 += color[2] * (npX - Math.floor(npX));
-						
-						r1 *= (1 - (npY - Math.floor(npY)));
-						g1 *= (1 - (npY - Math.floor(npY)));
-						b1 *= (1 - (npY - Math.floor(npY)));
-						
-						newPix = Math.ceil(npY/p2) * tmp_w + Math.floor(npX/p2);
-						if(newPix >= pixels_size2.length)
-							color = [255, 255, 255, 1];
-						else
-							color = imageUtils.toColorArr(pixels_size2[newPix]);
-						r2 += color[0] * (1 - (npX - Math.floor(npX)));
-						g2 += color[1] * (1 - (npX - Math.floor(npX)));
-						b2 += color[2] * (1 - (npX - Math.floor(npX)));
-						
-						newPix = Math.ceil(npY/p2) * tmp_w + Math.ceil(npX/p2);
-						
-						if(newPix >= pixels_size2.length)
-							color = [255, 255, 255, 1];
-						else
-							color = imageUtils.toColorArr(pixels_size2[newPix]);
-						r2 += color[0] * (npX - Math.floor(npX));
-						g2 += color[1] * (npX - Math.floor(npX));
-						b2 += color[2] * (npX - Math.floor(npX));
-						
-						r2 *= (npY - Math.floor(npY));
-						g2 *= (npY - Math.floor(npY));
-						b2 *= (npY - Math.floor(npY));
-						
-						let tr2 = r1 + r2;
-						let tg2 = g1 + g2;
-						let tb2 = b1 + b2;
-						
+        newPix = Math.floor(npY) * w + Math.ceil(npX);
+        color = imageUtils.toColorArr(matrix[newPix]);
+        r1 += color[0] * (npX - Math.floor(npX));
+        g1 += color[1] * (npX - Math.floor(npX));
+        b1 += color[2] * (npX - Math.floor(npX));
 
-						let r = Math.round((tr1*(p2 - dk) + tr2*(dk - p1))/p1);
-						let g = Math.round((tg1*(p2 - dk) + tg2*(dk - p1))/p1);
-						let b = Math.round((tb1*(p2 - dk) + tb2*(dk - p1))/p1);
-						
-						new_pixels[i] = imageUtils.RGBToInt(imageUtils.normalaizeColors([r, g, b, 1]));
-					}
-				}
-                else
-                    new_pixels[i] = -1;
+        r1 *= (1 - (npY - Math.floor(npY)));
+        g1 *= (1 - (npY - Math.floor(npY)));
+        b1 *= (1 - (npY - Math.floor(npY)));
+
+        newPix = Math.ceil(npY) * w + Math.floor(npX);
+        color = imageUtils.toColorArr(matrix[newPix]);
+        r2 += color[0] * (1 - (npX - Math.floor(npX)));
+        g2 += color[1] * (1 - (npX - Math.floor(npX)));
+        b2 += color[2] * (1 - (npX - Math.floor(npX)));
+
+        newPix = Math.ceil(npY) * w + Math.ceil(npX);
+        color = imageUtils.toColorArr(matrix[newPix]);
+        r2 += color[0] * (npX - Math.floor(npX));
+        g2 += color[1] * (npX - Math.floor(npX));
+        b2 += color[2] * (npX - Math.floor(npX));
+
+        r2 *= (npY - Math.floor(npY));
+        g2 *= (npY - Math.floor(npY));
+        b2 *= (npY - Math.floor(npY));
+
+        return imageUtils.RGBToInt(imageUtils.normalaizeColors([r1 + r2, g1 + g2, b1 + b2, 1]));
+    }
+
+    trilinearFiltration(npX, npY, pixels_size1, pixels_size2, tmp_w, p1, p2, dk) {
+
+
+        let color = [];
+        let r1 = 0, g1 = 0, b1 = 0;
+        let r2 = 0, g2 = 0, b2 = 0;
+
+        newPix = Math.floor(npY / p1) * tmp_w * 2 + Math.floor(npX / p1);
+        if (newPix >= pixels_size1.length)
+            color = [255, 255, 255, 1];
+        else
+            color = imageUtils.toColorArr(pixels_size1[newPix]);
+        r1 += color[0] * (1 - (npX - Math.floor(npX)));
+        g1 += color[1] * (1 - (npX - Math.floor(npX)));
+        b1 += color[2] * (1 - (npX - Math.floor(npX)));
+
+        newPix = Math.floor(npY / p1) * tmp_w * 2 + Math.ceil(npX / p1);
+        if (newPix >= pixels_size1.length)
+            color = [255, 255, 255, 1];
+        else
+            color = imageUtils.toColorArr(pixels_size1[newPix]);
+        r1 += color[0] * (npX - Math.floor(npX));
+        g1 += color[1] * (npX - Math.floor(npX));
+        b1 += color[2] * (npX - Math.floor(npX));
+
+        r1 *= (1 - (npY - Math.floor(npY)));
+        g1 *= (1 - (npY - Math.floor(npY)));
+        b1 *= (1 - (npY - Math.floor(npY)));
+
+        newPix = Math.ceil(npY / p1) * tmp_w * 2 + Math.floor(npX / p1);
+        if (newPix >= pixels_size1.length)
+            color = [255, 255, 255, 1];
+        else
+            color = imageUtils.toColorArr(pixels_size1[newPix]);
+        r2 += color[0] * (1 - (npX - Math.floor(npX)));
+        g2 += color[1] * (1 - (npX - Math.floor(npX)));
+        b2 += color[2] * (1 - (npX - Math.floor(npX)));
+
+        newPix = Math.ceil(npY / p1) * tmp_w * 2 + Math.ceil(npX / p1);
+        if (newPix >= pixels_size1.length)
+            color = [255, 255, 255, 1];
+        else
+            color = imageUtils.toColorArr(pixels_size1[newPix]);
+        r2 += color[0] * (npX - Math.floor(npX));
+        g2 += color[1] * (npX - Math.floor(npX));
+        b2 += color[2] * (npX - Math.floor(npX));
+
+        r2 *= (npY - Math.floor(npY));
+        g2 *= (npY - Math.floor(npY));
+        b2 *= (npY - Math.floor(npY));
+
+        let tr1 = r1 + r2;
+        let tg1 = g1 + g2;
+        let tb1 = b1 + b2;
+
+        r1 = 0;
+        g1 = 0;
+        b1 = 0;
+        r2 = 0;
+        g2 = 0;
+        b2 = 0;
+
+        newPix = Math.floor(npY / p2) * tmp_w + Math.floor(npX / p2);
+        if (newPix >= pixels_size2.length)
+            color = [255, 255, 255, 1];
+        else
+            color = imageUtils.toColorArr(pixels_size2[newPix]);
+        r1 += color[0] * (1 - (npX - Math.floor(npX)));
+        g1 += color[1] * (1 - (npX - Math.floor(npX)));
+        b1 += color[2] * (1 - (npX - Math.floor(npX)));
+
+        newPix = Math.floor(npY / p2) * tmp_w + Math.ceil(npX / p2);
+        if (newPix >= pixels_size2.length)
+            color = [255, 255, 255, 1];
+        else
+            color = imageUtils.toColorArr(pixels_size2[newPix]);
+        r1 += color[0] * (npX - Math.floor(npX));
+        g1 += color[1] * (npX - Math.floor(npX));
+        b1 += color[2] * (npX - Math.floor(npX));
+
+        r1 *= (1 - (npY - Math.floor(npY)));
+        g1 *= (1 - (npY - Math.floor(npY)));
+        b1 *= (1 - (npY - Math.floor(npY)));
+
+        newPix = Math.ceil(npY / p2) * tmp_w + Math.floor(npX / p2);
+        if (newPix >= pixels_size2.length)
+            color = [255, 255, 255, 1];
+        else
+            color = imageUtils.toColorArr(pixels_size2[newPix]);
+        r2 += color[0] * (1 - (npX - Math.floor(npX)));
+        g2 += color[1] * (1 - (npX - Math.floor(npX)));
+        b2 += color[2] * (1 - (npX - Math.floor(npX)));
+
+        newPix = Math.ceil(npY / p2) * tmp_w + Math.ceil(npX / p2);
+
+        if (newPix >= pixels_size2.length)
+            color = [255, 255, 255, 1];
+        else
+            color = imageUtils.toColorArr(pixels_size2[newPix]);
+        r2 += color[0] * (npX - Math.floor(npX));
+        g2 += color[1] * (npX - Math.floor(npX));
+        b2 += color[2] * (npX - Math.floor(npX));
+
+        r2 *= (npY - Math.floor(npY));
+        g2 *= (npY - Math.floor(npY));
+        b2 *= (npY - Math.floor(npY));
+
+        let tr2 = r1 + r2;
+        let tg2 = g1 + g2;
+        let tb2 = b1 + b2;
+
+
+        let r = Math.round((tr1 * (p2 - dk) + tr2 * (dk - p1)) / p1);
+        let g = Math.round((tg1 * (p2 - dk) + tg2 * (dk - p1)) / p1);
+        let b = Math.round((tb1 * (p2 - dk) + tb2 * (dk - p1)) / p1);
+
+        return imageUtils.RGBToInt(imageUtils.normalaizeColors([r, g, b, 1]));
+    }
+
+
+    dotsToImageCoordinates() {
+        let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
+        let tmp = this.state.transformDotsCoordinates;
+        for (let key in this.state.transformDotsCoordinates) {
+            tmp[key].x = Math.round(this.state.transformDots[key].x * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0));
+            tmp[key].y = Math.round(this.state.transformDots[key].y * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
+        }
+        this.setState({
+            transformDotsCoordinates: tmp
+        });
+
+        let x1 = this.state.transformDotsCoordinates.f1.x;
+        let x2 = this.state.transformDotsCoordinates.f2.x;
+        let x3 = this.state.transformDotsCoordinates.f3.x;
+        let y1 = this.state.transformDotsCoordinates.f1.y;
+        let y2 = this.state.transformDotsCoordinates.f2.y;
+        let y3 = this.state.transformDotsCoordinates.f3.y;
+
+        let sx1 = this.state.transformDotsCoordinates.s1.x;
+        let sx2 = this.state.transformDotsCoordinates.s2.x;
+        let sx3 = this.state.transformDotsCoordinates.s3.x;
+        let sy1 = this.state.transformDotsCoordinates.s1.y;
+        let sy2 = this.state.transformDotsCoordinates.s2.y;
+        let sy3 = this.state.transformDotsCoordinates.s3.y;
+
+        let det = sx1 * sy2 + sx2 * sy3 + sx3 * sy1 - sx3 * sy2 - sx2 * sy1 - sx1 * sy3;
+
+
+        let invertMatrix = [[(sy2 - sy3) / det, (sx3 - sx2) / det, (sx2 * sy3 - sy2 * sx3) / det],
+            [(sy3 - sy1) / det, (sx1 - sx3) / det, (sx3 * sy1 - sx1 * sy3) / det],
+            [(sy1 - sy2) / det, (sx2 - sx1) / det, (sx1 * sy2 - sx2 * sy1) / det]];
+
+
+        let transformMatrix = [[x1 * invertMatrix[0][0] + x2 * invertMatrix[1][0] + x3 * invertMatrix[2][0],
+            x1 * invertMatrix[0][1] + x2 * invertMatrix[1][1] + x3 * invertMatrix[2][1],
+            x1 * invertMatrix[0][2] + x2 * invertMatrix[1][2] + x3 * invertMatrix[2][2]],
+            [y1 * invertMatrix[0][0] + y2 * invertMatrix[1][0] + y3 * invertMatrix[2][0],
+                y1 * invertMatrix[0][1] + y2 * invertMatrix[1][1] + y3 * invertMatrix[2][1],
+                y1 * invertMatrix[0][2] + y2 * invertMatrix[1][2] + y3 * invertMatrix[2][2]],
+            [1 * invertMatrix[0][0] + 1 * invertMatrix[1][0] + 1 * invertMatrix[2][0],
+                1 * invertMatrix[0][1] + 1 * invertMatrix[1][1] + 1 * invertMatrix[2][1],
+                1 * invertMatrix[0][2] + 1 * invertMatrix[1][2] + 1 * invertMatrix[2][2]]];
+
+
+        let new_pixels = [];
+
+        let delta = transformMatrix[0][0] * transformMatrix[1][1] - transformMatrix[0][1] * transformMatrix[1][0];
+
+        let pixels_size1 = [];
+        let pixels_size2 = [];
+        let tmp_p = this.state.basePixels;
+        let tmp_w = this.state.width;
+        let tmp_h = this.state.height;
+        let p1, p2;
+        let dk = Math.sqrt(delta);
+
+        if (delta >= 1) {
+
+
+            for (let i = 1; i < dk; i *= 2) {
+                if (i * 2 > dk) {
+                    p1 = i;
+                    p2 = i * 2;
+                }
             }
+            if (p1 === 1)
+                pixels_size1 = tmp_p;
+            for (let i = 2; i <= p2; i *= 2) {
+                let t = this.convolution([0, 0, 0, 0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4], tmp_p);
+                tmp_p = [];
+                for (let j = 0; j < Math.floor(tmp_w / 2) * Math.floor(tmp_h / 2); j++) {
+                    let tpX = (j % Math.floor(tmp_w / 2)) * 2;
+                    let tpY = parseInt(j / Math.floor(tmp_w / 2)) * 2;
+                    tmp_p[j] = t[tpY * tmp_w + tpX];
+                }
+                tmp_w /= 2;
+                tmp_h /= 2;
 
-			
-			this.setState({
-                pixels: new_pixels
+
+                if (i === p1) {
+                    pixels_size1 = tmp_p;
+                }
+                if (i === p2) {
+                    pixels_size2 = tmp_p;
+                }
+
+            }
+        }
+
+
+        for (let i = 0; i < this.state.width * this.state.height; i++) {
+            let pX = i % this.state.width;
+            let pY = parseInt(i / this.state.width);
+
+            let npX = transformMatrix[0][0] * pX + transformMatrix[0][1] * pY + transformMatrix[0][2];
+            let npY = transformMatrix[1][0] * pX + transformMatrix[1][1] * pY + transformMatrix[1][2];
+
+
+            let newPix = Math.round(npY) * this.state.width + Math.round(npX);
+
+            if (Math.floor(npX) >= 0 && Math.ceil(npX) < this.state.width && Math.floor(npY) >= 0 && Math.ceil(npY) < this.state.height) {
+                if (delta < 1) {
+
+                    new_pixels[i] = this.bilinearFilter(npX, npY, this.state.basePixels, this.state.width);
+
+                }
+                else {
+
+
+                    new_pixels[i] = this.trilinearFiltration(npX, npY, pixels_size1, pixels_size2, tmp_w, p1, p2, dk);
+                }
+            }
+            else
+                new_pixels[i] = -1;
+        }
+
+
+        this.setState({
+            pixels: new_pixels
+        });
+        imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+            this.setState({
+                imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                loadingBar: null
             });
-            imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+        });
+
+
+    }
+
+    handleImageTouch(e) {
+        if (this.state.panelIndex !== 4)
+            return;
+
+        let tmp = this.state.transformDots;
+        switch (this.state.transformDots.count) {
+            case 0:
+                tmp.count = 1;
+                tmp.f1 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
                 this.setState({
-                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                    loadingBar: null
+                    transformDots: tmp,
+                }, () => {
+                    this.drawDots()
                 });
-            });
-
-
-	}
-	
-	handleImageTouch(e) {
-		if(this.state.panelIndex != 4)
-			return;
-			
-		let tmp = this.state.transformDots;
-		switch(this.state.transformDots.count)
-		{
-			case 0:
-				tmp.count = 1;
-				tmp.f1 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
-				this.setState({
-					transformDots: tmp,
-				}, () => {this.drawDots()});
-				break;
-			case 1:
-				tmp.count = 2;
-				tmp.f2 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
-				this.setState({
-					transformDots: tmp,
-				}, () => {this.drawDots()});
-				break;
-			case 2:
-				tmp.count = 3;
-				tmp.f3 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
-				this.setState({
-					transformDots: tmp,
-				}, () => {this.drawDots()});
-				break;
-			case 3:
-				tmp.count = 4;
-				tmp.s1 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
-				this.setState({
-					transformDots: tmp,
-				}, () => {this.drawDots()});
-				break;
-			case 4:
-				tmp.count = 5;
-				tmp.s2 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
-				this.setState({
-					transformDots: tmp,
-				}, () => {this.drawDots()});
-				break;
-			case 5:
-				tmp.count = 6;
-				tmp.s3 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
-				this.setState({
-					transformDots: tmp,
-				}, () => {this.drawDots()});
-				break;
-		}
-	}
+                break;
+            case 1:
+                tmp.count = 2;
+                tmp.f2 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+                this.setState({
+                    transformDots: tmp,
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+            case 2:
+                tmp.count = 3;
+                tmp.f3 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+                this.setState({
+                    transformDots: tmp,
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+            case 3:
+                tmp.count = 4;
+                tmp.s1 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+                this.setState({
+                    transformDots: tmp,
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+            case 4:
+                tmp.count = 5;
+                tmp.s2 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+                this.setState({
+                    transformDots: tmp,
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+            case 5:
+                tmp.count = 6;
+                tmp.s3 = {x: e.nativeEvent.locationX, y: e.nativeEvent.locationY};
+                this.setState({
+                    transformDots: tmp,
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+        }
+        this.setState({
+            currentPanel: <LinearFiltration dotsCount={tmp.count} callbackFunction={this.linearFiltration.bind(this)}/>,
+        });
+    }
 
     /*onContextCreate = (gl: WebGLRenderingContext) => {
 		this.setState({
@@ -1175,23 +1209,25 @@ export default class Editor extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <View onLayout={(e) => {this.setState({
-							imageContainer: {
-								width: e.nativeEvent.layout.width,
-								height: e.nativeEvent.layout.height,
-							}
-						})}} style={styles.imageDesk}>
-					{/*<WebGLView
+                <View onLayout={(e) => {
+                    this.setState({
+                        imageContainer: {
+                            width: e.nativeEvent.layout.width,
+                            height: e.nativeEvent.layout.height,
+                        }
+                    })
+                }} style={styles.imageDesk}>
+                    {/*<WebGLView
                         style={{ width: 100, height: 100 }}
                         onContextCreate={this.onContextCreate}
                     />*/}
-					<TouchableWithoutFeedback onPress={(e) => this.handleImageTouch(e)}>
-						<ImageBackground resizeMode={this.state.imageMode} source={this.state.imageSource}
-										 style={styles.uploadImage}>
-							{this.state.drawableDots}
-							{this.state.loadingBar}
-						</ImageBackground>
-					</TouchableWithoutFeedback>
+                    <TouchableWithoutFeedback onPress={(e) => this.handleImageTouch(e)}>
+                        <ImageBackground resizeMode={this.state.imageMode} source={this.state.imageSource}
+                                         style={styles.uploadImage}>
+                            {this.state.drawableDots}
+                            {this.state.loadingBar}
+                        </ImageBackground>
+                    </TouchableWithoutFeedback>
                 </View>
                 <View style={styles.editPanel}>
                     {this.state.currentPanel}
@@ -1206,7 +1242,7 @@ export default class Editor extends React.Component {
                     <TouchableOpacity onPress={() => this.choosePanel("usm")}>
                         <Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 16}}>USM</Text>
                     </TouchableOpacity>
-					<TouchableOpacity onPress={() => this.choosePanel("lin")}>
+                    <TouchableOpacity onPress={() => this.choosePanel("lin")}>
                         <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 16}}>BL</Text>
                     </TouchableOpacity>
                 </View>
@@ -1264,10 +1300,10 @@ const styles = StyleSheet.create({
         right: 0,
         top: 0,
     },
-	circle: {
-		width: 5,
-		height: 5,
-		borderRadius: 100/2,
-		position: "absolute",
-	}
+    circle: {
+        width: 5,
+        height: 5,
+        borderRadius: 100 / 2,
+        position: "absolute",
+    }
 });
