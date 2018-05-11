@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Base64;
+import android.os.Environment;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -19,6 +20,8 @@ import com.facebook.react.bridge.WritableNativeArray;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.File;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
@@ -156,13 +159,14 @@ class BitmapModule extends ReactContextBaseJavaModule {
             Bitmap.Config conf = Bitmap.Config.ARGB_8888;
             Bitmap image = Bitmap.createBitmap(width, height, conf);
             image.setPixels(pixels, 0, width, 0, 0, width, height);
-            File path = Environment.DIRECTORY_PICTURES  + File.separator + "LensEditor"; 
-			File outputDir= new File(path);   
+			File outputDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "LensEditor");   
             outputDir.mkdirs(); 
-			File file = new File(path + "/" + imageName + ".jpg");
-			FileOutputStream out = new FileOutputStream(file);   
-            bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);   
-            callback.invoke(null, path + "/" + imageName + ".jpg");
+			File file = new File(outputDir, imageName + ".jpg");
+			FileOutputStream out = new FileOutputStream(file.getAbsolutePath());   
+            image.compress(Bitmap.CompressFormat.JPEG, 100, out);   
+			out.flush();
+            out.close();
+            callback.invoke(null, imageName + ".jpg");
         } catch (Exception e) {
             callback.invoke(e.getMessage());
         }

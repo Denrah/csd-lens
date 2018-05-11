@@ -11,7 +11,8 @@ import {
     ScrollView,
     Slider,
     TouchableWithoutFeedback,
-    ToastAndroid
+    ToastAndroid,
+	NativeModules,
 } from 'react-native';
 import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
 import {WebGLView} from "react-native-webgl";
@@ -248,6 +249,12 @@ export default class Editor extends React.Component {
                     loadingBar: null
                 });
             });
+			NativeModules.Bitmap.saveImageToFile("test1", this.state.pixels, this.state.width, this.state.height, (err, data) => {
+				if (err) {
+					console.log(err);
+				}
+				console.log(data);
+			});
         });
     }
 
