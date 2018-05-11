@@ -58,6 +58,7 @@ export default class Editor extends React.Component {
             imageSource: null,
             pixels: null,
             basePixels: null,
+			baseSource: null,
             width: null,
             height: null,
             canvas: null,
