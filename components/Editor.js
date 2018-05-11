@@ -101,6 +101,12 @@ export default class Editor extends React.Component {
         this.setResizeMode = this.setResizeMode.bind(this);
     }
 
+    savePixels() {
+        this.setState({
+            basePixels: this.state.pixels
+        });
+    }
+
     updateImage(src, callback) {
         this.state.gl.viewport(0, 0, this.state.gl.drawingBufferWidth, this.state.gl.drawingBufferHeight);
         let buffer = this.state.gl.createBuffer();
