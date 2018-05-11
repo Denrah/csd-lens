@@ -42,12 +42,20 @@ export default class Editor extends React.Component {
                 fontWeight: 'normal',
             },
             headerRight: (
-                <TouchableOpacity onPress={params.setResizeMode}>
-                    <Image style={{
-                        width: 20, height: 20, marginRight: 10
-                    }} source={params.resizeImage}>
-                    </Image>
-                </TouchableOpacity>
+				<View style={{width: 60, flex: 1, flexDirection: 'row', alignItems: "center", justifyContent: "center"}}>
+					<TouchableOpacity onPress={params.setResizeMode}>
+						<Image style={{
+							width: 20, height: 20, marginRight: 10
+						}} source={params.resizeImage}>
+						</Image>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={params.saveChanges}>
+						<Image style={{
+							width: 20, height: 20, marginRight: 10
+						}} source={require('../assets/ui/tick.png')}>
+						</Image>
+					</TouchableOpacity>
+				</View>
             ),
         }
     };
@@ -59,6 +67,8 @@ export default class Editor extends React.Component {
             pixels: null,
             basePixels: null,
 			baseSource: null,
+			newWidth: null,
+			newHeight: null,
             width: null,
             height: null,
             canvas: null,
@@ -100,11 +110,15 @@ export default class Editor extends React.Component {
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
+		this.savePixels = this.savePixels.bind(this);
     }
 
     savePixels() {
         this.setState({
-            basePixels: this.state.pixels
+            basePixels: this.state.pixels,
+			baseSource: this.state.imageSource,
+			width: this.state.newWidth,
+			height: this.state.newHeight,
         });
     }
 
@@ -220,7 +234,7 @@ export default class Editor extends React.Component {
                 new_colors[0] = (colors[0] + colors[1] + colors[2]) / 3;
                 new_colors[1] = (colors[0] + colors[1] + colors[2]) / 3;
                 new_colors[2] = (colors[0] + colors[1] + colors[2]) / 3;
-                new_colors[3] = colors[3];
+                new_colors[3] = 1;
 
                 new_colors = imageUtils.normalaizeColors(new_colors);
                 new_pixels[i] = imageUtils.RGBToInt(new_colors);
@@ -473,7 +487,9 @@ export default class Editor extends React.Component {
 
 
             this.setState({
-                pixels: new_pixels_filter
+                pixels: crop_pixels,
+				newWidth: n_width,
+				newHeight: n_height
             });
             imageUtils.getBase64FromPixels(crop_pixels, n_width, n_height).then(res => {
                 this.setState({
@@ -626,6 +642,7 @@ export default class Editor extends React.Component {
     componentDidMount() {
         this.props.navigation.setParams({
             setResizeMode: this.setResizeMode,
+			saveChanges: this.savePixels,
             resizeImage: require('../assets/ui/full_size.png')
         });
         this.choosePanel("filter");
@@ -640,10 +657,13 @@ export default class Editor extends React.Component {
                 pixels: res[0],
                 basePixels: res[0],
                 width: res[1],
-                height: res[2]
+                height: res[2],
+				newWidth: res[1],
+				newHeight: res[2]
             });
             this.setState({
                 imageSource: {uri: response.uri},
+				baseSource: {uri: response.uri},
                 loadingBar: null,
                 //canvas: <Canvas ref={this.handleCanvas}/>
             });
@@ -747,6 +767,9 @@ export default class Editor extends React.Component {
     }
 
     choosePanel(panel) {
+		this.setState({
+			imageSource: this.state.baseSource
+		});
         switch (panel) {
             case "filter":
                 this.setState({
@@ -1126,6 +1149,7 @@ export default class Editor extends React.Component {
                 imageSource: {uri: 'data:image/jpeg;base64,' + res},
                 loadingBar: null
             });
+			this.linearFiltration("clear");
         });
 
 

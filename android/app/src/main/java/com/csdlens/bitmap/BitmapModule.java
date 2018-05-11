@@ -146,4 +146,25 @@ class BitmapModule extends ReactContextBaseJavaModule {
 
         return bitmap;
     }
+	
+	@ReactMethod
+	private void saveImageToFile(final String imageName, ReadableArray pixelsData, int width, int height, final Callback callback) {
+		try {
+            int[] pixels = new int[width * height];
+            for(int i = 0; i < width*height; i++)
+                pixels[i] = pixelsData.getInt(i);
+            Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+            Bitmap image = Bitmap.createBitmap(width, height, conf);
+            image.setPixels(pixels, 0, width, 0, 0, width, height);
+            File path = Environment.DIRECTORY_PICTURES  + File.separator + "LensEditor"; 
+			File outputDir= new File(path);   
+            outputDir.mkdirs(); 
+			File file = new File(path + "/" + imageName + ".jpg");
+			FileOutputStream out = new FileOutputStream(file);   
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);   
+            callback.invoke(null, path + "/" + imageName + ".jpg");
+        } catch (Exception e) {
+            callback.invoke(e.getMessage());
+        }
+	}
 }
