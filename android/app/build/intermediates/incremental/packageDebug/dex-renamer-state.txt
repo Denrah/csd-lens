@@ -1,4 +1,4 @@
-#Sat May 12 00:49:32 GMT+07:00 2018
+#Sat May 12 23:16:20 GMT+07:00 2018
 base.0=D\:\\work\\csd-lens\\android\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\1f\\main
 renamed.0=classes.dex
 file.0=D\:\\work\\csd-lens\\android\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\1f\\main\\classes.dex

@@ -9,7 +9,7 @@ export default class SizeAndRot extends React.Component {
         this.invokeCallback = this.invokeCallback.bind(this);
         this.state = {
             rotationValue: 0,
-			sizeValue: 0,
+			sizeValue: 100,
         };
     }
 
@@ -40,7 +40,8 @@ export default class SizeAndRot extends React.Component {
 					<Text style={{color: "white", marginLeft: 15}}>Size:</Text>
 					<Slider
 					  step={1}
-					  maximumValue={100}
+					  maximumValue={200}
+					  value={100}
 					  style={styles.sliderStyle}
 					  onValueChange={this.onSizeChange.bind(this)}
                       thumbTintColor={"#00CF68"}

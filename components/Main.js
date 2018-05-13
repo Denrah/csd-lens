@@ -58,7 +58,7 @@ export default class Main extends React.Component {
         return (
             <View style={styles.container}>
 				<ImageBackground source={require('../assets/ui/mm_bg.jpg')}  style={styles.bgImage}>
-					<Image source={require('../assets/ui/splash.png')} style={{width: 300, height: 100, marginTop: -70, marginBottom: 50}} resizeMode={"cover"} />
+					<Image source={require('../assets/ui/splash.png')} style={{width: 300, height: 80, marginTop: -20, marginBottom: 50}} resizeMode={"cover"} />
 					<View style={{width: 132, height: 80, justifyContent: "space-between"}}>
 						<Button color={"#00CF68"} title={"Choose picture"} style={{alignSelf: 'stretch', marginBottom: 10}} onPress={this.selectImage.bind(this)}/>
 						<Button color={"#00CF68"} title={"About"} style={{alignSelf: 'stretch'}} onPress={() => {}}/>

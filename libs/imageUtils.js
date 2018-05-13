@@ -1,6 +1,22 @@
 import React from 'react';
 import { NativeModules } from 'react-native';
 
+let savePixelsToFile = async function(name, pixels, width, height) {
+	let res;
+	await new Promise((resolve, reject) => {
+		NativeModules.Bitmap.saveImageToFile(name, pixels, width, height, (err, data) => {
+			if (err) {
+				return reject(err);
+			}
+			resolve(data);
+		});
+	}).then(function (data) {
+        res = data;
+    });
+	
+	return res;
+}
+
 /**
  *
  * @param path
@@ -92,3 +108,4 @@ module.exports.getBase64FromPixels = getBase64FromPixels;
 module.exports.toColorArr = toColorArr;
 module.exports.RGBToInt = RGBToInt;
 module.exports.normalaizeColors = normalaizeColors;
+module.exports.savePixelsToFile = savePixelsToFile;

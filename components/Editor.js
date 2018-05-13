@@ -50,10 +50,10 @@ export default class Editor extends React.Component {
 						}} source={params.resizeImage}>
 						</Image>
 					</TouchableOpacity>
-					<TouchableOpacity onPress={params.saveChanges}>
+					<TouchableOpacity onPress={params.savePicture}>
 						<Image style={{
 							width: 20, height: 20, marginRight: 10
-						}} source={require('../assets/ui/tick.png')}>
+						}} source={require('../assets/ui/save.png')}>
 						</Image>
 					</TouchableOpacity>
 				</View>
@@ -108,11 +108,17 @@ export default class Editor extends React.Component {
             drawableDots: null,
             imageMode: "contain",
             panelIndex: 1,
+			wasChanged: false,
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
 		this.savePixels = this.savePixels.bind(this);
+		this.savePicture = this.savePicture.bind(this);
     }
+	
+	savePicture() {
+		this.props.navigation.navigate('SaveImage', {image: this.state.baseSource, pixels: this.state.basePixels, width: this.state.width, height: this.state.height});
+	}
 
     savePixels() {
         this.setState({
@@ -120,6 +126,14 @@ export default class Editor extends React.Component {
 			baseSource: this.state.imageSource,
 			width: this.state.newWidth,
 			height: this.state.newHeight,
+			wasChanged: false,
+        });
+    }
+	
+	cancelSavePixels() {
+        this.setState({
+			wasChanged: false,
+			imageSource: this.state.baseSource,
         });
     }
 
@@ -249,12 +263,6 @@ export default class Editor extends React.Component {
                     loadingBar: null
                 });
             });
-			NativeModules.Bitmap.saveImageToFile("test1", this.state.pixels, this.state.width, this.state.height, (err, data) => {
-				if (err) {
-					console.log(err);
-				}
-				console.log(data);
-			});
         });
     }
 
@@ -315,13 +323,126 @@ export default class Editor extends React.Component {
             });
         });
     }
+	
+	rotate(angle) {
+        let b_angle = (angle % 90) * (Math.PI / 180);
+        angle = -angle * (Math.PI / 180);
+        this.setState({
+            loadingBar: loadingBar
+        }, () => {
+            let tw = Math.max(this.state.width, this.state.height);
+            let th = Math.min(this.state.width, this.state.height);
+            let k = 1 / ((tw / th) * Math.sin(b_angle) + Math.cos(b_angle));
+            let n_width = Math.floor(this.state.width * k);
+            let n_height = Math.floor(this.state.height * k);
+            let dx = Math.ceil((this.state.width - n_width) / 2);
+            let dy = Math.ceil((this.state.height - n_height) / 2);
+
+            let new_pixels = new Array(this.state.width * this.state.height);
+            new_pixels.fill(-1);
+            for (let i = 0; i < this.state.width * this.state.height; i++) {
+                let pX = i % this.state.width - parseInt(this.state.width / 2);
+                let pY = parseInt(i / this.state.width) - parseInt(this.state.height / 2);
+                let npX = parseInt(Math.cos(angle) * pX - Math.sin(angle) * pY) + parseInt(this.state.width / 2);
+                let npY = parseInt(Math.sin(angle) * pX + Math.cos(angle) * pY) + parseInt(this.state.height / 2);
+                let newPix = npY * this.state.width + npX;
+
+                if (npX >= 0 && npX < this.state.width && npY >= 0 && npY < this.state.height)
+                    new_pixels[i] = this.state.basePixels[newPix];
+                else
+                    new_pixels[i] = -1;
+            }
+			
+			 let new_pixels_filter = [];
+			
+			if(angle !== 0)
+			{
+				let weights = [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9];
+				let side = Math.round(Math.sqrt(weights.length));
+				let halfSide = Math.floor(side / 2);
+				for (let y = 0; y < this.state.height; y++) {
+					for (let x = 0; x < this.state.width; x++) {
+						let r = 0, g = 0, b = 0, a = 0;
+						for (let cy = 0; cy < side; cy++) {
+							for (let cx = 0; cx < side; cx++) {
+								let scy = y + cy - halfSide;
+								let scx = x + cx - halfSide;
+								if (scy >= 0 && scy < this.state.height && scx >= 0 && scx < this.state.width) {
+									let srcOff = (scy * this.state.width + scx);
+									let wt = weights[cy * side + cx];
+									r += imageUtils.toColorArr(new_pixels[srcOff])[0] * wt;
+									g += imageUtils.toColorArr(new_pixels[srcOff])[1] * wt;
+									b += imageUtils.toColorArr(new_pixels[srcOff])[2] * wt;
+									a += imageUtils.toColorArr(new_pixels[srcOff])[3];
+								}
+							}
+						}
+						let new_colors = [r, g, b, a];
+						new_colors = imageUtils.normalaizeColors(new_colors);
+						new_pixels_filter[y * this.state.width + x] = imageUtils.RGBToInt(new_colors);
+					}
+				}
+			}
+			else
+			{
+				new_pixels_filter = new_pixels;
+			}
+
+            let crop_pixels = new Array(n_width * n_height);
+            for (let i = 0; i < n_width * n_height; i++) {
+                let pX = i % n_width;
+                let pY = parseInt(i / n_width);
+                pX += dx;
+                pY += dy;
+                let newPix = pY * this.state.width + pX;
+                crop_pixels[i] = new_pixels_filter[newPix];
+            }
+
+
+            this.setState({
+                pixels: crop_pixels,
+				newWidth: n_width,
+				newHeight: n_height
+            });
+            /*imageUtils.getBase64FromPixels(crop_pixels, n_width, n_height).then(res => {
+                this.setState({
+                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                    loadingBar: null
+                });
+            });*/
+        });
+    }
 
     resize(size) {
         this.setState({
             loadingBar: loadingBar
         }, () => {
-            let size = 50;
-            let w_result = parseInt(this.state.width / 100 * size);
+	
+			
+			let k = size/100;
+			
+			let new_pixels = [];
+			
+			
+			for(let i = 0; i < this.state.newWidth * this.state.newHeight; i++)
+			{
+				let pX = i % this.state.newWidth - parseInt(this.state.newWidth / 2);
+                let pY = parseInt(i / this.state.newWidth) - parseInt(this.state.newHeight / 2);
+				
+				let npX = Math.round(pX / k) + parseInt(this.state.newWidth / 2);
+				let npY = Math.round(pY / k) + parseInt(this.state.newHeight / 2);
+				
+				if(npX >= 0 && npY >= 0 && npX < this.state.newWidth && npY < this.state.newHeight)
+				{
+					new_pixels[i] = this.state.pixels[npY * this.state.newWidth + npX];
+				}
+				else
+				{
+					new_pixels[i] = -1;
+				}
+			}
+			
+            /*let w_result = parseInt(this.state.width / 100 * size);
             let h_result = parseInt(this.state.height / 100 * size);
 
             let new_pixels = new Array(w_result * h_result);
@@ -357,13 +478,13 @@ export default class Editor extends React.Component {
 
                     new_pixels[offset++] = imageUtils.RGBToInt(imageUtils.normalaizeColors(rgba));
                 }
-            }
+            }*/
 
             this.setState({
-                pixels: new_pixels
+                pixels: new_pixels,
             });
 
-            imageUtils.getBase64FromPixels(new_pixels, w_result, h_result).then(res => {
+            imageUtils.getBase64FromPixels(new_pixels, this.state.newWidth, this.state.newHeight).then(res => {
                 this.setState({
                     imageSource: {uri: 'data:image/jpeg;base64,' + res},
                     loadingBar: null
@@ -426,88 +547,12 @@ export default class Editor extends React.Component {
         return new_pixels;
     }
 
-    rotate(angle) {
-        let b_angle = (angle % 90) * (Math.PI / 180);
-        angle = -angle * (Math.PI / 180);
-        this.setState({
-            loadingBar: loadingBar
-        }, () => {
-            let tw = Math.max(this.state.width, this.state.height);
-            let th = Math.min(this.state.width, this.state.height);
-            let k = 1 / ((tw / th) * Math.sin(b_angle) + Math.cos(b_angle));
-            let n_width = Math.floor(this.state.width * k);
-            let n_height = Math.floor(this.state.height * k);
-            let dx = Math.ceil((this.state.width - n_width) / 2);
-            let dy = Math.ceil((this.state.height - n_height) / 2);
-
-            let new_pixels = new Array(this.state.width * this.state.height);
-            new_pixels.fill(-1);
-            for (let i = 0; i < this.state.width * this.state.height; i++) {
-                let pX = i % this.state.width - parseInt(this.state.width / 2);
-                let pY = parseInt(i / this.state.width) - parseInt(this.state.height / 2);
-                let npX = parseInt(Math.cos(angle) * pX - Math.sin(angle) * pY) + parseInt(this.state.width / 2);
-                let npY = parseInt(Math.sin(angle) * pX + Math.cos(angle) * pY) + parseInt(this.state.height / 2);
-                let newPix = npY * this.state.width + npX;
-
-                if (npX >= 0 && npX < this.state.width && npY >= 0 && npY < this.state.height)
-                    new_pixels[i] = this.state.basePixels[newPix];
-                else
-                    new_pixels[i] = -1;
-            }
-
-            let weights = [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9];
-            let new_pixels_filter = [];
-            let side = Math.round(Math.sqrt(weights.length));
-            let halfSide = Math.floor(side / 2);
-            for (let y = 0; y < this.state.height; y++) {
-                for (let x = 0; x < this.state.width; x++) {
-                    let r = 0, g = 0, b = 0, a = 0;
-                    for (let cy = 0; cy < side; cy++) {
-                        for (let cx = 0; cx < side; cx++) {
-                            let scy = y + cy - halfSide;
-                            let scx = x + cx - halfSide;
-                            if (scy >= 0 && scy < this.state.height && scx >= 0 && scx < this.state.width) {
-                                let srcOff = (scy * this.state.width + scx);
-                                let wt = weights[cy * side + cx];
-                                r += imageUtils.toColorArr(new_pixels[srcOff])[0] * wt;
-                                g += imageUtils.toColorArr(new_pixels[srcOff])[1] * wt;
-                                b += imageUtils.toColorArr(new_pixels[srcOff])[2] * wt;
-                                a += imageUtils.toColorArr(new_pixels[srcOff])[3];
-                            }
-                        }
-                    }
-                    let new_colors = [r, g, b, a];
-                    new_colors = imageUtils.normalaizeColors(new_colors);
-                    new_pixels_filter[y * this.state.width + x] = imageUtils.RGBToInt(new_colors);
-                }
-            }
-
-            let crop_pixels = new Array(n_width * n_height);
-            for (let i = 0; i < n_width * n_height; i++) {
-                let pX = i % n_width;
-                let pY = parseInt(i / n_width);
-                pX += dx;
-                pY += dy;
-                let newPix = pY * this.state.width + pX;
-                crop_pixels[i] = new_pixels_filter[newPix];
-            }
-
-
-            this.setState({
-                pixels: crop_pixels,
-				newWidth: n_width,
-				newHeight: n_height
-            });
-            imageUtils.getBase64FromPixels(crop_pixels, n_width, n_height).then(res => {
-                this.setState({
-                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                    loadingBar: null
-                });
-            });
-        });
-    }
+   
 
     unsharpMask(radius, amount, threshold) {
+		this.setState({
+			wasChanged: true,
+		});
         radius = radius * 2 + 1;
         let weights = new Array(radius * radius);
         let halfSide = Math.floor(radius / 2);
@@ -649,7 +694,7 @@ export default class Editor extends React.Component {
     componentDidMount() {
         this.props.navigation.setParams({
             setResizeMode: this.setResizeMode,
-			saveChanges: this.savePixels,
+			savePicture: this.savePicture,
             resizeImage: require('../assets/ui/full_size.png')
         });
         this.choosePanel("filter");
@@ -700,6 +745,9 @@ export default class Editor extends React.Component {
     }*/
 
     filterCallback(val) {
+		this.setState({
+			wasChanged: true,
+		});
         switch (val) {
             case "gray":
                 this.grayscale();
@@ -734,10 +782,11 @@ export default class Editor extends React.Component {
 
     sizeAndRotCallback(size, rot) {
         this.setState({
-            loadingBar: loadingBar
+            loadingBar: loadingBar,
+			wasChanged: true,
         }, () => {
             this.rotate(rot);
-            //this.resize(size);
+            setTimeout(() => {this.resize(size)}, 10);
         });
     }
 
@@ -1032,6 +1081,9 @@ export default class Editor extends React.Component {
 
 
     dotsToImageCoordinates() {
+		this.setState({
+			wasChanged: true,
+		});
         let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
         let tmp = this.state.transformDotsCoordinates;
         for (let key in this.state.transformDotsCoordinates) {
@@ -1284,6 +1336,20 @@ export default class Editor extends React.Component {
                         <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 16}}>BL</Text>
                     </TouchableOpacity>
                 </View>
+				{this.state.wasChanged ? <View style={styles.bottomBar}>
+					<TouchableOpacity onPress={this.cancelSavePixels.bind(this)}>
+						<Image style={{
+							width: 20, height: 20
+						}} source={require('../assets/ui/cross.png')}>
+						</Image>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={this.savePixels.bind(this)}>
+						<Image style={{
+							width: 20, height: 20
+						}} source={require('../assets/ui/tick.png')}>
+						</Image>
+					</TouchableOpacity>
+				</View> : null}
             </View>
         );
     }

@@ -3,6 +3,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import {StackNavigator} from "react-navigation";
 import Main from './components/Main';
 import Editor from './components/Editor';
+import SaveImage from './components/SaveImage';
 
 
 class App extends React.Component {
@@ -33,7 +34,10 @@ export default StackNavigator(
         },
         Editor: {
             screen: Editor,
-        }
+        },
+		SaveImage: {
+			screen: SaveImage,
+		},
     },
     {
         initialRouteName: 'Main',
