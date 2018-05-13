@@ -424,6 +424,59 @@ export default class Editor extends React.Component {
 			let new_pixels = [];
 			
 			
+			let pixels_size1 = [];
+			let pixels_size2 = [];
+			let tmp_p = this.state.pixels;
+			let tmp_w = this.state.newWidth;
+			let tmp_h = this.state.newHeight;
+			let p1, p2;
+			let dk = 1/k;
+			
+			let ps1w, ps2w, ps1h, ps2h;
+
+			if (k < 1) {
+
+
+				for (let i = 1; i < dk; i *= 2) {
+					if (i * 2 >= dk) {
+						p1 = i;
+						p2 = i * 2;
+					}
+				}
+				
+				if (p1 === 1)
+				{
+					pixels_size1 = tmp_p;
+					ps1w = tmp_w;
+					ps1h = tmp_h;
+				}
+				for (let i = 2; i <= p2; i *= 2) {
+					let t = this.convolution([0, 0, 0, 0, 1/4, 1/4, 0, 1/4, 1/4], tmp_p);
+					tmp_p = [];
+					for (let j = 0; j < Math.floor(tmp_w / 2) * Math.floor(tmp_h / 2); j++) {
+						let tpX = (j % Math.floor(tmp_w / 2)) * 2;
+						let tpY = parseInt(j / Math.floor(tmp_w / 2)) * 2;
+						tmp_p[j] = t[tpY * tmp_w + tpX];
+					}
+
+					tmp_w = Math.floor(tmp_w/2);
+					tmp_h = Math.floor(tmp_h/2);
+
+
+					if (i === p1) {
+						pixels_size1 = tmp_p;
+						ps1w = tmp_w;
+						ps1h = tmp_h;
+					}
+					if (i === p2) {
+						pixels_size2 = tmp_p;
+						ps2w = tmp_w;
+						ps2h = tmp_h;
+					}
+
+				}
+			}	
+			
 			for(let i = 0; i < this.state.newWidth * this.state.newHeight; i++)
 			{
 				let pX = i % this.state.newWidth - parseInt(this.state.newWidth / 2);
@@ -434,7 +487,12 @@ export default class Editor extends React.Component {
 				
 				if(npX >= 0 && npY >= 0 && npX < this.state.newWidth && npY < this.state.newHeight)
 				{
-					new_pixels[i] = this.state.pixels[npY * this.state.newWidth + npX];
+					if(k > 1)
+						new_pixels[i] = this.bilinearFilter(npX, npY, this.state.pixels, this.state.newWidth);
+					else if(k < 1)
+						new_pixels[i] = this.trilinearFiltration(npX, npY, pixels_size1, pixels_size2, ps1w, ps2w, p1, p2, dk);
+					else
+						new_pixels[i] = this.state.pixels[npY * this.state.newWidth + npX];
 				}
 				else
 				{
@@ -960,14 +1018,14 @@ export default class Editor extends React.Component {
         return imageUtils.RGBToInt(imageUtils.normalaizeColors([r1 + r2, g1 + g2, b1 + b2, 1]));
     }
 
-    trilinearFiltration(npX, npY, pixels_size1, pixels_size2, tmp_w, p1, p2, dk) {
+    trilinearFiltration(npX, npY, pixels_size1, pixels_size2, ps1w, ps2w, p1, p2, dk) {
 
 
         let color = [];
         let r1 = 0, g1 = 0, b1 = 0;
         let r2 = 0, g2 = 0, b2 = 0;
 
-        newPix = Math.floor(npY / p1) * tmp_w * 2 + Math.floor(npX / p1);
+        newPix = Math.floor(npY / p1) * ps1w + Math.floor(npX / p1);
         if (newPix >= pixels_size1.length)
             color = [255, 255, 255, 1];
         else
@@ -976,7 +1034,7 @@ export default class Editor extends React.Component {
         g1 += color[1] * (1 - (npX - Math.floor(npX)));
         b1 += color[2] * (1 - (npX - Math.floor(npX)));
 
-        newPix = Math.floor(npY / p1) * tmp_w * 2 + Math.ceil(npX / p1);
+        newPix = Math.floor(npY / p1) * ps1w + Math.ceil(npX / p1);
         if (newPix >= pixels_size1.length)
             color = [255, 255, 255, 1];
         else
@@ -989,7 +1047,7 @@ export default class Editor extends React.Component {
         g1 *= (1 - (npY - Math.floor(npY)));
         b1 *= (1 - (npY - Math.floor(npY)));
 
-        newPix = Math.ceil(npY / p1) * tmp_w * 2 + Math.floor(npX / p1);
+        newPix = Math.ceil(npY / p1) * ps1w + Math.floor(npX / p1);
         if (newPix >= pixels_size1.length)
             color = [255, 255, 255, 1];
         else
@@ -998,7 +1056,7 @@ export default class Editor extends React.Component {
         g2 += color[1] * (1 - (npX - Math.floor(npX)));
         b2 += color[2] * (1 - (npX - Math.floor(npX)));
 
-        newPix = Math.ceil(npY / p1) * tmp_w * 2 + Math.ceil(npX / p1);
+        newPix = Math.ceil(npY / p1) * ps1w + Math.ceil(npX / p1);
         if (newPix >= pixels_size1.length)
             color = [255, 255, 255, 1];
         else
@@ -1022,7 +1080,7 @@ export default class Editor extends React.Component {
         g2 = 0;
         b2 = 0;
 
-        newPix = Math.floor(npY / p2) * tmp_w + Math.floor(npX / p2);
+        newPix = Math.floor(npY / p2) * ps2w + Math.floor(npX / p2);
         if (newPix >= pixels_size2.length)
             color = [255, 255, 255, 1];
         else
@@ -1031,7 +1089,7 @@ export default class Editor extends React.Component {
         g1 += color[1] * (1 - (npX - Math.floor(npX)));
         b1 += color[2] * (1 - (npX - Math.floor(npX)));
 
-        newPix = Math.floor(npY / p2) * tmp_w + Math.ceil(npX / p2);
+        newPix = Math.floor(npY / p2) * ps2w + Math.ceil(npX / p2);
         if (newPix >= pixels_size2.length)
             color = [255, 255, 255, 1];
         else
@@ -1044,7 +1102,7 @@ export default class Editor extends React.Component {
         g1 *= (1 - (npY - Math.floor(npY)));
         b1 *= (1 - (npY - Math.floor(npY)));
 
-        newPix = Math.ceil(npY / p2) * tmp_w + Math.floor(npX / p2);
+        newPix = Math.ceil(npY / p2) * ps2w + Math.floor(npX / p2);
         if (newPix >= pixels_size2.length)
             color = [255, 255, 255, 1];
         else
@@ -1053,7 +1111,7 @@ export default class Editor extends React.Component {
         g2 += color[1] * (1 - (npX - Math.floor(npX)));
         b2 += color[2] * (1 - (npX - Math.floor(npX)));
 
-        newPix = Math.ceil(npY / p2) * tmp_w + Math.ceil(npX / p2);
+        newPix = Math.ceil(npY / p2) * ps2w + Math.ceil(npX / p2);
 
         if (newPix >= pixels_size2.length)
             color = [255, 255, 255, 1];
@@ -1076,7 +1134,7 @@ export default class Editor extends React.Component {
         let g = Math.round((tg1 * (p2 - dk) + tg2 * (dk - p1)) / p1);
         let b = Math.round((tb1 * (p2 - dk) + tb2 * (dk - p1)) / p1);
 
-        return imageUtils.RGBToInt(imageUtils.normalaizeColors([r, g, b, 1]));
+        return imageUtils.RGBToInt(imageUtils.normalaizeColors([tr1, tg1, tb1, 1]));
     }
 
 
@@ -1138,18 +1196,23 @@ export default class Editor extends React.Component {
         let tmp_h = this.state.height;
         let p1, p2;
         let dk = Math.sqrt(delta);
+		let ps1w, ps2w, ps1h, ps2h;
 
         if (delta >= 1) {
 
 
             for (let i = 1; i < dk; i *= 2) {
-                if (i * 2 > dk) {
+                if (i * 2 >= dk) {
                     p1 = i;
                     p2 = i * 2;
                 }
             }
             if (p1 === 1)
+			{
                 pixels_size1 = tmp_p;
+				ps1w = tmp_w;
+				ps1h = tmp_h;
+			}
             for (let i = 2; i <= p2; i *= 2) {
                 let t = this.convolution([0, 0, 0, 0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4], tmp_p);
                 tmp_p = [];
@@ -1164,9 +1227,13 @@ export default class Editor extends React.Component {
 
                 if (i === p1) {
                     pixels_size1 = tmp_p;
+					ps1w = tmp_w;
+					ps1h = tmp_h;
                 }
                 if (i === p2) {
                     pixels_size2 = tmp_p;
+					ps2w = tmp_w;
+					ps2h = tmp_h;
                 }
 
             }
@@ -1192,7 +1259,7 @@ export default class Editor extends React.Component {
                 else {
 
 
-                    new_pixels[i] = this.trilinearFiltration(npX, npY, pixels_size1, pixels_size2, tmp_w, p1, p2, dk);
+                    new_pixels[i] = this.trilinearFiltration(npX, npY, pixels_size1, pixels_size2, ps1w, ps2w, p1, p2, dk);
                 }
             }
             else
