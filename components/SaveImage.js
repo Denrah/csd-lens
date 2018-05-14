@@ -1,15 +1,15 @@
 import React from 'react';
-import {StyleSheet, Text, View, Button, Image, ProgressBarAndroid, TextInput} from 'react-native';
+import {StyleSheet, Text, View, Button, Image, ProgressBarAndroid, TextInput, ToastAndroid} from 'react-native';
 import {StackNavigator} from 'react-navigation';
 
 let ImagePicker = require('react-native-image-picker');
 let imageUtils = require('../libs/imageUtils.js');
 
-let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse" />;
+let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse"/>;
 
 export default class SaveImage extends React.Component {
 
-	static navigationOptions = ({navigation}) => {
+    static navigationOptions = ({navigation}) => {
         return {
             title: 'Save image',
             headerStyle: {
@@ -27,37 +27,39 @@ export default class SaveImage extends React.Component {
         super(props);
         this.state = {
             loadingBar: null,
-			image: null,
-			name: null,
+            image: null,
         };
     }
 
     componentDidMount() {
-		const {params} = this.props.navigation.state;
+        const {params} = this.props.navigation.state;
         this.setState({
-			image: params.image,
-		});
+            image: params.image,
+        });
     }
 
-	saveImage() {
-	console.log(this.props.navigation.state);
-		imageUtils.savePixelsToFile((this.state.name === "") ? "untitled" : this.state.name, this.props.navigation.state.params.pixels,
-			this.props.navigation.state.params.width, this.props.navigation.state.params.	height);
-	}
+    saveImage() {
+        let d = new Date();
+        this.setState({loadingBar: loadingBar}, () => {
+            setTimeout(() => {
+                imageUtils.savePixelsToFile("LE_" + d.getDate() + "" + d.getMonth() + "" + d.getFullYear() + "" + d.getHours() + "" + d.getMinutes() + "" + d.getSeconds(),
+                    this.props.navigation.state.params.pixels,
+                    this.props.navigation.state.params.width, this.props.navigation.state.params.height).then(() => {
+                    this.setState({loadingBar: null});
+                    ToastAndroid.show("File saved", ToastAndroid.SHORT);
+                });
+            }, 10);
+        });
+
+    }
 
     render() {
         return (
             <View style={styles.container}>
-				<TextInput
-					style={{width: 300, height: 40, marginBottom: 10, marginTop: 30, borderWidth: 0, color: "#00CF68"}}
-					onChangeText={(name) => this.setState({name})}
-					value={this.state.name}
-					placeholder={"File name"}
-					placeholderTextColor={"#00CF68"}
-					underlineColorAndroid={"#00CF68"}
-				  />
-				<Image source={this.state.image} style={{width: 300, height: 300}} resizeMode={"contain"} />
-				<Button color={"#00CF68"} title={"Save picture"} style={{marginTop: 10}} onPress={this.saveImage.bind(this)}/>
+                <Image source={this.state.image} style={{width: 300, height: 300, marginTop: 30, marginBottom: 30}} resizeMode={"contain"}/>
+                <Button color={"#00CF68"} title={"Save picture"}
+                        onPress={this.saveImage.bind(this)}/>
+                {this.state.loadingBar}
             </View>
         );
     }

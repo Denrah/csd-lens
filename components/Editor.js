@@ -20,6 +20,7 @@ import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
 import UnsharpMask from "./UnsharpMask";
 import LinearFiltration from "./LinearFiltration";
+import Retouch from './Retouch';
 
 
 let filters = require('../libs/filters.js');
@@ -80,7 +81,8 @@ export default class Editor extends React.Component {
                 filters: "#00CF68",
                 sizeAndRot: "white",
                 unsharpMask: "white",
-                linearFiltration: "white"
+                linearFiltration: "white",
+                retouch: "white"
             },
             transformDots: {
                 count: 0,
@@ -109,6 +111,11 @@ export default class Editor extends React.Component {
             imageMode: "contain",
             panelIndex: 1,
 			wasChanged: false,
+            retouchCircle: null,
+            retouchRadius: 1,
+            retouchAmount: 1,
+            retouchX: 0,
+            retouchY: 0,
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
@@ -127,6 +134,7 @@ export default class Editor extends React.Component {
 			width: this.state.newWidth,
 			height: this.state.newHeight,
 			wasChanged: false,
+            retouchCircle: null,
         });
     }
 	
@@ -134,6 +142,7 @@ export default class Editor extends React.Component {
         this.setState({
 			wasChanged: false,
 			imageSource: this.state.baseSource,
+            retouchCircle: null,
         });
     }
 
@@ -451,7 +460,7 @@ export default class Editor extends React.Component {
 					ps1h = tmp_h;
 				}
 				for (let i = 2; i <= p2; i *= 2) {
-					let t = this.convolution([0, 0, 0, 0, 1/4, 1/4, 0, 1/4, 1/4], tmp_p);
+					let t = this.convolution([0, 0, 0, 0, 1/4, 1/4, 0, 1/4, 1/4], tmp_p, tmp_w, tmp_h);
 					tmp_p = [];
 					for (let j = 0; j < Math.floor(tmp_w / 2) * Math.floor(tmp_h / 2); j++) {
 						let tpX = (j % Math.floor(tmp_w / 2)) * 2;
@@ -568,7 +577,7 @@ export default class Editor extends React.Component {
         });
     }
 
-    convolution(weights, pixelsData) {
+    convolution(weights, pixelsData, width, height) {
         let new_pixels = [];
         this.setState({
             loadingBar: loadingBar
@@ -580,15 +589,15 @@ export default class Editor extends React.Component {
         }
         let side = Math.round(Math.sqrt(weights.length));
         let halfSide = Math.floor(side / 2);
-        for (let y = 0; y < this.state.height; y++) {
-            for (let x = 0; x < this.state.width; x++) {
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
                 let r = 0, g = 0, b = 0, a = 0;
                 for (let cy = 0; cy < side; cy++) {
                     for (let cx = 0; cx < side; cx++) {
                         let scy = y + cy - halfSide;
                         let scx = x + cx - halfSide;
-                        if (scy >= 0 && scy < this.state.height && scx >= 0 && scx < this.state.width) {
-                            let srcOff = (scy * this.state.width + scx);
+                        if (scy >= 0 && scy < height && scx >= 0 && scx < width) {
+                            let srcOff = (scy * width + scx);
                             let wt = weights[cy * side + cx];
                             r += imageUtils.toColorArr(pixelsData[srcOff])[0] * wt;
                             g += imageUtils.toColorArr(pixelsData[srcOff])[1] * wt;
@@ -599,7 +608,7 @@ export default class Editor extends React.Component {
                 }
                 let new_colors = [r, g, b, 1];
                 new_colors = imageUtils.normalaizeColors(new_colors);
-                new_pixels[y * this.state.width + x] = imageUtils.RGBToInt(new_colors);
+                new_pixels[y * width + x] = imageUtils.RGBToInt(new_colors);
             }
         }
         return new_pixels;
@@ -631,7 +640,7 @@ export default class Editor extends React.Component {
         }
 
 
-        let blured_pixels = this.convolution(weights, this.state.basePixels);
+        let blured_pixels = this.convolution(weights, this.state.basePixels, this.state.width, this.state.height);
 
         let new_pixels = [];
 
@@ -666,7 +675,7 @@ export default class Editor extends React.Component {
     sharp() {
         let new_pixels = this.convolution([-1, -1, -1,
             -1, 9, -1,
-            -1, -1, -1], this.state.basePixels);
+            -1, -1, -1], this.state.basePixels, this.state.width, this.state.height);
 
 
         this.setState({
@@ -683,7 +692,7 @@ export default class Editor extends React.Component {
     edgeDetection() {
         let new_pixels = this.convolution([0, 1, 0,
             1, -4, 1,
-            0, 1, 0], this.state.basePixels);
+            0, 1, 0], this.state.basePixels, this.state.width, this.state.height);
 
 
         this.setState({
@@ -700,7 +709,7 @@ export default class Editor extends React.Component {
     emboss() {
         let new_pixels = this.convolution([0, 1, 0,
             1, 0, -1,
-            0, -1, 0], this.state.basePixels);
+            0, -1, 0], this.state.basePixels, this.state.width, this.state.height);
 
         for (let i = 0; i < this.state.width * this.state.height; i++) {
 
@@ -727,14 +736,14 @@ export default class Editor extends React.Component {
     async sobel() {
         let new_pixels = this.convolution([-1, 0, 1,
             -2, 0, 2,
-            -1, 0, 1], this.state.basePixels);
+            -1, 0, 1], this.state.basePixels, this.state.width, this.state.height);
         await this.setState({
             pixels: new_pixels
         }, () => {
             setTimeout(() => {
                 new_pixels = this.convolution([-1, 0, 1,
                     -2, 0, 2,
-                    -1, 0, 1], new_pixels);
+                    -1, 0, 1], new_pixels, this.state.width, this.state.height);
 
                 this.setState({
                     pixels: new_pixels
@@ -892,7 +901,8 @@ export default class Editor extends React.Component {
                         filters: "#00CF68",
                         sizeAndRot: "white",
                         unsharpMask: "white",
-                        linearFiltration: "white"
+                        linearFiltration: "white",
+                        retouch: "white"
                     },
                     panelIndex: 1
                 });
@@ -904,7 +914,8 @@ export default class Editor extends React.Component {
                         filters: "white",
                         sizeAndRot: "#00CF68",
                         unsharpMask: "white",
-                        linearFiltration: "white"
+                        linearFiltration: "white",
+                        retouch: "white"
                     },
                     panelIndex: 2
                 });
@@ -916,7 +927,8 @@ export default class Editor extends React.Component {
                         filters: "white",
                         sizeAndRot: "white",
                         unsharpMask: "#00CF68",
-                        linearFiltration: "white"
+                        linearFiltration: "white",
+                        retouch: "white"
                     },
                     panelIndex: 3
                 });
@@ -928,12 +940,26 @@ export default class Editor extends React.Component {
                         filters: "white",
                         sizeAndRot: "white",
                         unsharpMask: "white",
-                        linearFiltration: "#00CF68"
+                        linearFiltration: "#00CF68",
+                        retouch: "white"
                     },
                     panelIndex: 4
                 });
                 if (this.state.imageMode === "cover")
                     this.setResizeMode();
+                break;
+            case "reto":
+                this.setState({
+                    currentPanel: <Retouch callbackFunction={this.retouchCallback.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "white",
+                        unsharpMask: "white",
+                        linearFiltration: "white",
+                        retouch: "#00CF68"
+                    },
+                    panelIndex: 5
+                });
                 break;
 
         }
@@ -1214,7 +1240,7 @@ export default class Editor extends React.Component {
 				ps1h = tmp_h;
 			}
             for (let i = 2; i <= p2; i *= 2) {
-                let t = this.convolution([0, 0, 0, 0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4], tmp_p);
+                let t = this.convolution([0, 0, 0, 0, 1 / 4, 1 / 4, 0, 1 / 4, 1 / 4], tmp_p, tmp_w, tmp_h);
                 tmp_p = [];
                 for (let j = 0; j < Math.floor(tmp_w / 2) * Math.floor(tmp_h / 2); j++) {
                     let tpX = (j % Math.floor(tmp_w / 2)) * 2;
@@ -1281,7 +1307,118 @@ export default class Editor extends React.Component {
 
     }
 
+    retouchCallback(radius, amount)
+    {
+        this.setState({
+            retouchRadius: radius,
+            retouchAmount: amount
+        });
+
+    }
+
     handleImageTouch(e) {
+
+        if(this.state.panelIndex === 5) {
+            this.setState({
+                wasChanged: true,
+            });
+            let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
+            let retouchX = Math.round(e.nativeEvent.locationX * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0)),
+                retouchY = Math.round(e.nativeEvent.locationY * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
+
+            this.setState({
+                retouchCircle: <View style={[styles.retouchCircle, {
+                    left: e.nativeEvent.locationX-this.state.retouchRadius-1,
+                    top: e.nativeEvent.locationY-this.state.retouchRadius-1,
+                    width: this.state.retouchRadius*2+1,
+                    height: this.state.retouchRadius*2+1
+                }]}/>,
+                retouchX: retouchX,
+                retouchY: retouchY
+            });
+
+            let new_pixels = this.state.pixels.slice();
+
+            let radius = this.state.retouchAmount;
+            let weights = new Array(radius * radius);
+            let halfSide = Math.floor(radius / 2);
+            let sigma = halfSide;
+            let sum = 0;
+            for (let y = 0; y < radius; y++) {
+                for (let x = 0; x < radius; x++) {
+                    let nx = x - halfSide;
+                    let ny = y - halfSide;
+                    let w = (1 / (2 * Math.PI * sigma * sigma)) * Math.exp(-(nx * nx + ny * ny) / (2 * sigma * sigma));
+                    let offset = y * radius + x;
+                    weights[offset] = w;
+                    sum += w;
+                }
+            }
+            for (let i = 0; i < weights.length; i++) {
+                weights[i] /= sum;
+            }
+
+
+            let blured_pixels = [];
+
+            for(let i = Math.round(-this.state.retouchRadius * k) - this.state.retouchAmount; i <= Math.round(this.state.retouchRadius * k) + this.state.retouchAmount; i++)
+            {
+                for(let j = Math.round(-this.state.retouchRadius * k) - this.state.retouchAmount; j <= Math.round(this.state.retouchRadius * k) + this.state.retouchAmount; j++)
+                {
+                    let pX = retouchX + j;
+                    let pY = retouchY + i;
+                    let Pix = pY * this.state.width + pX;
+
+                    blured_pixels.push(this.state.pixels[Pix]);
+                }
+            }
+
+            blured_pixels = this.convolution(weights, blured_pixels, parseInt(Math.sqrt(blured_pixels.length)), parseInt(Math.sqrt(blured_pixels.length)));
+
+
+            let l = parseInt(Math.sqrt(blured_pixels.length)) - this.state.retouchAmount*2;
+
+            let crop_blur = new Array(l*l);
+
+            for (let i = 0; i < l*l; i++) {
+                let pX = i % l;
+                let pY = parseInt(i / l);
+                pX += this.state.retouchAmount;
+                pY += this.state.retouchAmount;
+                let newPix = pY * parseInt(Math.sqrt(blured_pixels.length)) + pX;
+                crop_blur[i] = blured_pixels[newPix];
+            }
+
+
+
+            let c = 0;
+
+            for(let i = Math.round(-this.state.retouchRadius * k); i <= Math.round(this.state.retouchRadius * k); i++)
+            {
+                for(let j = Math.round(-this.state.retouchRadius * k); j <= Math.round(this.state.retouchRadius * k); j++)
+                {
+                    let pX = retouchX + j;
+                    let pY = retouchY + i;
+                    let r = Math.sqrt((pX - retouchX)*(pX - retouchX) + (pY - retouchY)*(pY - retouchY));
+                    if(r <= this.state.retouchRadius * k) {
+                        let Pix = pY * this.state.width + pX;
+                        new_pixels[Pix] = crop_blur[c];
+                    }
+                    c++;
+                }
+            }
+            this.setState({
+                pixels: new_pixels
+            });
+            imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+                this.setState({
+                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                    loadingBar: null
+                });
+            });
+        }
+
+
         if (this.state.panelIndex !== 4)
             return;
 
@@ -1382,6 +1519,7 @@ export default class Editor extends React.Component {
                         <ImageBackground resizeMode={this.state.imageMode} source={this.state.imageSource}
                                          style={styles.uploadImage}>
                             {this.state.drawableDots}
+                            {this.state.retouchCircle}
                             {this.state.loadingBar}
                         </ImageBackground>
                     </TouchableWithoutFeedback>
@@ -1391,16 +1529,22 @@ export default class Editor extends React.Component {
                 </View>
                 <View style={styles.bottomBar}>
                     <TouchableOpacity onPress={() => this.choosePanel("filter")}>
-                        <Text style={{color: this.state.navigationColors.filters, fontSize: 16}}>FILTER</Text>
+                        <Text style={{color: this.state.navigationColors.filters, fontSize: 14}}>FILTER</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("size")}>
-                        <Text style={{color: this.state.navigationColors.sizeAndRot, fontSize: 16}}>SIZE&ROT</Text>
+                        <Text style={{color: this.state.navigationColors.sizeAndRot, fontSize: 14}}>SIZE&ROT</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("usm")}>
-                        <Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 16}}>USM</Text>
+                        <Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 14}}>USM</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("lin")}>
-                        <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 16}}>BL</Text>
+                        <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 14}}>BL</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.choosePanel("reto")}>
+                        <Text style={{color: this.state.navigationColors.retouch, fontSize: 14}}>RETO</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.choosePanel("lin")}>
+                        <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 14}}>BOKEH</Text>
                     </TouchableOpacity>
                 </View>
 				{this.state.wasChanged ? <View style={styles.bottomBar}>
@@ -1448,7 +1592,7 @@ const styles = StyleSheet.create({
         height: 40,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingTop: 8,
+        paddingTop: 10,
         paddingLeft: 15,
         paddingRight: 15,
         borderTopColor: '#00CF68',
@@ -1476,5 +1620,11 @@ const styles = StyleSheet.create({
         height: 5,
         borderRadius: 100 / 2,
         position: "absolute",
+    },
+    retouchCircle: {
+        borderRadius: 100 / 2,
+        position: "absolute",
+        borderWidth: 1,
+        borderColor: '#00CF68',
     }
 });
