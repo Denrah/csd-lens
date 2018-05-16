@@ -65,33 +65,6 @@ class BitmapModule extends ReactContextBaseJavaModule {
         try {
 
             WritableArray res = new WritableNativeArray();
-            /*final Bitmap tmp = loadImage(imageName);
-
-            final double MAX_WIDTH = 1000;
-
-            double width = tmp.getWidth();
-            double height = tmp.getHeight();
-
-            if(width > height && width > MAX_WIDTH)
-            {
-                height = height * (MAX_WIDTH / width);
-                width = MAX_WIDTH;
-            }
-            else if(height > MAX_WIDTH)
-            {
-                width = width * (MAX_WIDTH / height);
-                height = MAX_WIDTH;
-            }
-
-            final Bitmap bitmap = Bitmap.createScaledBitmap(loadImage(imageName), (int)width, (int)height, false);
-			
-			final Bitmap bitmap = tmp;
-
-            int[] pixels = new int[bitmap.getHeight() * bitmap.getWidth()];
-            bitmap.getPixels(pixels, 0, (int)width, 0, 0, (int)width, (int)height);
-
-            for(int i = 0; i < bitmap.getHeight() * bitmap.getWidth(); i++)
-                res.pushInt(pixels[i]);*/
 				
 			Bitmap bitmap = loadImage(imageName);
 			//bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos);
@@ -127,7 +100,7 @@ class BitmapModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getBase64OpenCVFromPixels(ReadableArray pixelsData, int width, int height, final Callback callback) {
+    public void getOpenCVBokehFromPixels(int amount, ReadableArray pixelsData, int width, int height, int x1, int y1, int x2, int y2, final Callback callback) {
         try {
 			System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
 		
@@ -147,42 +120,54 @@ class BitmapModule extends ReactContextBaseJavaModule {
 			Imgproc.cvtColor(src1,src,Imgproc.COLOR_RGBA2RGB);
 			
 			Mat firstMask = new Mat();
+			Mat invertMask = new Mat();
 			Mat foregroundModel = new Mat();
 			Mat backgroundModel = new Mat();
-
-			Mat mask;
 
 			Mat source = new Mat(1, 1, CvType.CV_8U, new Scalar(3.0));
 			Mat destination = new Mat();
 			
-			Point topLeft = new Point(40, 1);
-			Point bottomRight = new Point(170, 140);
+			Point topLeft = new Point(x1, y1);
+			Point bottomRight = new Point(x2, y2);
 
 			Rect rect = new Rect(topLeft, bottomRight);
 
 			Imgproc.grabCut(src, firstMask, rect, backgroundModel, foregroundModel, 1, 0);
 
 			Core.compare(firstMask, source, firstMask, Core.CMP_EQ);
+			
+			Core.bitwise_not ( firstMask, invertMask );
 
 			Mat foreground = new Mat(src1.size(), CvType.CV_8UC3, new Scalar(255,255,255));
 			src.copyTo(foreground, firstMask);
 			
-			Utils.matToBitmap(backgroundModel, image);
-
-            /*Mat source = new Mat();
-            Bitmap bmp32 = image.copy(Bitmap.Config.ARGB_8888, true);
-            Utils.bitmapToMat(bmp32, source);
-
-            Mat destination = new Mat(source.rows(),source.cols(),source.type());
-            Imgproc.GaussianBlur(source, destination,new Size(45,45), 0);
-
-            Utils.matToBitmap(destination, image);*/
+			Imgproc.GaussianBlur(src, src,new Size(amount,amount), 0);
+			
+			Mat background = new Mat(src1.size(), CvType.CV_8UC3, new Scalar(255,255,255));
+			src.copyTo(background, invertMask);
+			
+			Mat dst = new Mat(src1.size(), CvType.CV_8UC3, new Scalar(255,255,255));
+			
+			
+			Core.bitwise_and( foreground, background, dst);
+			
+			Utils.matToBitmap(dst, image);
+			
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.PNG, 100, baos);
             byte[] b = baos.toByteArray();
             String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
-            callback.invoke(null, imageEncoded);
+			
+			WritableArray res = new WritableNativeArray();
+			
+			int[] pixels1 = new int[image.getHeight() * image.getWidth()];
+            image.getPixels(pixels1, 0, (int)image.getWidth(), 0, 0, (int)image.getWidth(), (int)image.getHeight());
+			for(int i = 0; i < pixels1.length; i++)
+				res.pushInt(pixels1[i]);
+			image.recycle();
+			
+            callback.invoke(null, imageEncoded, res);
         } catch (Exception e) {
             callback.invoke(e.getMessage());
         }

@@ -21,6 +21,7 @@ import SizeAndRot from "./SizeAndRot";
 import UnsharpMask from "./UnsharpMask";
 import LinearFiltration from "./LinearFiltration";
 import Retouch from './Retouch';
+import Bokeh from './Bokeh';
 
 
 let filters = require('../libs/filters.js');
@@ -82,7 +83,8 @@ export default class Editor extends React.Component {
                 sizeAndRot: "white",
                 unsharpMask: "white",
                 linearFiltration: "white",
-                retouch: "white"
+                retouch: "white",
+				bokeh: "white"
             },
             transformDots: {
                 count: 0,
@@ -116,6 +118,17 @@ export default class Editor extends React.Component {
             retouchAmount: 1,
             retouchX: 0,
             retouchY: 0,
+			bokehAmount: 1,
+            bokehX1: 0,
+            bokehY1: 0,
+			bokehX2: 0,
+            bokehY2: 0,
+			bokehXscreen1: 0,
+            bokehYscreen1: 0,
+			bokehXscreen2: 0,
+            bokehYscreen2: 0,
+			bokehCount: 0,
+			bokehRect: null,
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
@@ -135,6 +148,7 @@ export default class Editor extends React.Component {
 			height: this.state.newHeight,
 			wasChanged: false,
             retouchCircle: null,
+			bokehRect: null,
         });
     }
 	
@@ -143,6 +157,7 @@ export default class Editor extends React.Component {
 			wasChanged: false,
 			imageSource: this.state.baseSource,
             retouchCircle: null,
+			bokehRect: null,
         });
     }
 
@@ -902,7 +917,8 @@ export default class Editor extends React.Component {
                         sizeAndRot: "white",
                         unsharpMask: "white",
                         linearFiltration: "white",
-                        retouch: "white"
+                        retouch: "white",
+						bokeh: "white"
                     },
                     panelIndex: 1
                 });
@@ -915,7 +931,8 @@ export default class Editor extends React.Component {
                         sizeAndRot: "#00CF68",
                         unsharpMask: "white",
                         linearFiltration: "white",
-                        retouch: "white"
+                        retouch: "white",
+						bokeh: "white"
                     },
                     panelIndex: 2
                 });
@@ -928,7 +945,8 @@ export default class Editor extends React.Component {
                         sizeAndRot: "white",
                         unsharpMask: "#00CF68",
                         linearFiltration: "white",
-                        retouch: "white"
+                        retouch: "white",
+						bokeh: "white"
                     },
                     panelIndex: 3
                 });
@@ -941,7 +959,8 @@ export default class Editor extends React.Component {
                         sizeAndRot: "white",
                         unsharpMask: "white",
                         linearFiltration: "#00CF68",
-                        retouch: "white"
+                        retouch: "white",
+						bokeh: "white"
                     },
                     panelIndex: 4
                 });
@@ -956,9 +975,24 @@ export default class Editor extends React.Component {
                         sizeAndRot: "white",
                         unsharpMask: "white",
                         linearFiltration: "white",
-                        retouch: "#00CF68"
+                        retouch: "#00CF68",
+						bokeh: "white"
                     },
                     panelIndex: 5
+                });
+                break;
+			case "bokeh":
+                this.setState({
+                    currentPanel: <Bokeh callbackFunction={this.bokehCallback.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "white",
+                        unsharpMask: "white",
+                        linearFiltration: "white",
+						retouch: "white",
+                        bokeh: "#00CF68"
+                    },
+                    panelIndex: 6
                 });
                 break;
 
@@ -1315,6 +1349,24 @@ export default class Editor extends React.Component {
         });
 
     }
+	
+	bokehCallback(amount)
+    {
+        this.setState({
+            bokehAmount: amount,
+			loadingBar: loadingBar,
+        });
+		
+		imageUtils.getOpenCVBokehFromPixels(amount*2+1, this.state.basePixels, this.state.width, this.state.height,
+		this.state.bokehX1, this.state.bokehY1, this.state.bokehX2, this.state.bokehY2).then(res => {
+			this.setState({
+				imageSource: {uri: 'data:image/jpeg;base64,' + res[0]},
+				loadingBar: null,
+				pixels: res[1],
+			});
+		});
+
+    }
 
     handleImageTouch(e) {
 
@@ -1416,6 +1468,58 @@ export default class Editor extends React.Component {
                     loadingBar: null
                 });
             });
+        }
+		
+		if(this.state.panelIndex === 6) {
+            this.setState({
+                wasChanged: true,
+            });
+            let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
+            let bokehX = Math.round(e.nativeEvent.locationX * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0)),
+                bokehY = Math.round(e.nativeEvent.locationY * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
+				
+			if(bokehX < 0)
+				bokehX = 0;
+			if(bokehX > this.state.width)
+				bokehX = this.state.width;
+			if(bokehY < 0)
+				bokehY = 0;
+			if(bokehY > this.state.height)
+				bokehY = this.state.height;
+			
+			if(this.state.bokehCount == 0)
+			{
+				this.setState({
+					bokehRect: null,
+					bokehCount: 1,
+					bokehX1: bokehX,
+					bokehY1: bokehY,
+					bokehXscreen1: e.nativeEvent.locationX,
+					bokehYscreen1: e.nativeEvent.locationY
+				});
+			}
+			else
+			{
+				this.setState({
+					bokehRect: <View style={[styles.bokehRect, {
+						left: this.state.bokehXscreen1,
+						top: this.state.bokehYscreen1,
+						width: e.nativeEvent.locationX - this.state.bokehXscreen1,
+						height: e.nativeEvent.locationY - this.state.bokehYscreen1
+					}]}/>,
+					bokehCount: 0,
+					bokehX2: bokehX,
+					bokehY2: bokehY,
+					bokehXscreen2: e.nativeEvent.locationX,
+					bokehYscreen2: e.nativeEvent.locationY
+				});
+				
+			}
+
+            let new_pixels = this.state.pixels.slice();
+
+            let amount = this.state.bokehAmount;
+
         }
 
 
@@ -1520,6 +1624,7 @@ export default class Editor extends React.Component {
                                          style={styles.uploadImage}>
                             {this.state.drawableDots}
                             {this.state.retouchCircle}
+							{this.state.bokehRect}
                             {this.state.loadingBar}
                         </ImageBackground>
                     </TouchableWithoutFeedback>
@@ -1543,12 +1648,8 @@ export default class Editor extends React.Component {
                     <TouchableOpacity onPress={() => this.choosePanel("reto")}>
                         <Text style={{color: this.state.navigationColors.retouch, fontSize: 14}}>RETO</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {
-						NativeModules.Bitmap.getBase64OpenCVFromPixels(this.state.basePixels, this.state.width, this.state.height, (err, data) => {
-							console.log(err, data);
-						});
-					}}>
-                        <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 14}}>BOKEH</Text>
+                    <TouchableOpacity onPress={() => this.choosePanel("bokeh")}>
+                        <Text style={{color: this.state.navigationColors.bokeh, fontSize: 14}}>BOKEH</Text>
                     </TouchableOpacity>
                 </View>
 				{this.state.wasChanged ? <View style={styles.bottomBar}>
@@ -1627,6 +1728,11 @@ const styles = StyleSheet.create({
     },
     retouchCircle: {
         borderRadius: 100 / 2,
+        position: "absolute",
+        borderWidth: 1,
+        borderColor: '#00CF68',
+    },
+	bokehRect: {
         position: "absolute",
         borderWidth: 1,
         borderColor: '#00CF68',

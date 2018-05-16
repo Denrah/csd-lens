@@ -63,6 +63,23 @@ let  getBase64FromPixels = async function(pixels, width, height) {
     return res;
 };
 
+let getOpenCVBokehFromPixels = async function(amount, pixels, width, height, x1, y1, x2, y2) {
+    let res = [];
+
+    await new Promise((resolve, reject) => {
+        NativeModules.Bitmap.getOpenCVBokehFromPixels(amount, pixels, width, height, x1, y1, x2, y2, (err, data, pixels) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve([data, pixels]);
+        });
+    }).then(function (data) {
+        res = data;
+    });
+
+    return res;
+};
+
 /**
  *
  * @param num
@@ -109,3 +126,4 @@ module.exports.toColorArr = toColorArr;
 module.exports.RGBToInt = RGBToInt;
 module.exports.normalaizeColors = normalaizeColors;
 module.exports.savePixelsToFile = savePixelsToFile;
+module.exports.getOpenCVBokehFromPixels = getOpenCVBokehFromPixels;
