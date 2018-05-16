@@ -34,6 +34,17 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.android.Utils;
+
 
 class BitmapModule extends ReactContextBaseJavaModule {
     private final Context context;
@@ -105,6 +116,68 @@ class BitmapModule extends ReactContextBaseJavaModule {
             Bitmap.Config conf = Bitmap.Config.ARGB_8888;
             Bitmap image = Bitmap.createBitmap(width, height, conf);
             image.setPixels(pixels, 0, width, 0, 0, width, height);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] b = baos.toByteArray();
+            String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
+            callback.invoke(null, imageEncoded);
+        } catch (Exception e) {
+            callback.invoke(e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void getBase64OpenCVFromPixels(ReadableArray pixelsData, int width, int height, final Callback callback) {
+        try {
+			System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
+		
+		
+            int[] pixels = new int[width * height];
+            for(int i = 0; i < width*height; i++)
+                pixels[i] = pixelsData.getInt(i);
+            Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+            Bitmap image = Bitmap.createBitmap(width, height, conf);
+            image.setPixels(pixels, 0, width, 0, 0, width, height);
+			
+			Mat src1 = new Mat();
+			Mat src = new Mat();
+			Bitmap bmp32 = image.copy(Bitmap.Config.ARGB_8888, true);
+            Utils.bitmapToMat(bmp32, src1);
+			
+			Imgproc.cvtColor(src1,src,Imgproc.COLOR_RGBA2RGB);
+			
+			Mat firstMask = new Mat();
+			Mat foregroundModel = new Mat();
+			Mat backgroundModel = new Mat();
+
+			Mat mask;
+
+			Mat source = new Mat(1, 1, CvType.CV_8U, new Scalar(3.0));
+			Mat destination = new Mat();
+			
+			Point topLeft = new Point(40, 1);
+			Point bottomRight = new Point(170, 140);
+
+			Rect rect = new Rect(topLeft, bottomRight);
+
+			Imgproc.grabCut(src, firstMask, rect, backgroundModel, foregroundModel, 1, 0);
+
+			Core.compare(firstMask, source, firstMask, Core.CMP_EQ);
+
+			Mat foreground = new Mat(src1.size(), CvType.CV_8UC3, new Scalar(255,255,255));
+			src.copyTo(foreground, firstMask);
+			
+			Utils.matToBitmap(backgroundModel, image);
+
+            /*Mat source = new Mat();
+            Bitmap bmp32 = image.copy(Bitmap.Config.ARGB_8888, true);
+            Utils.bitmapToMat(bmp32, source);
+
+            Mat destination = new Mat(source.rows(),source.cols(),source.type());
+            Imgproc.GaussianBlur(source, destination,new Size(45,45), 0);
+
+            Utils.matToBitmap(destination, image);*/
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.PNG, 100, baos);
             byte[] b = baos.toByteArray();

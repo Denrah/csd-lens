@@ -1543,7 +1543,11 @@ export default class Editor extends React.Component {
                     <TouchableOpacity onPress={() => this.choosePanel("reto")}>
                         <Text style={{color: this.state.navigationColors.retouch, fontSize: 14}}>RETO</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => this.choosePanel("lin")}>
+                    <TouchableOpacity onPress={() => {
+						NativeModules.Bitmap.getBase64OpenCVFromPixels(this.state.basePixels, this.state.width, this.state.height, (err, data) => {
+							console.log(err, data);
+						});
+					}}>
                         <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 14}}>BOKEH</Text>
                     </TouchableOpacity>
                 </View>

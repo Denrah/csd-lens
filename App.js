@@ -4,6 +4,7 @@ import {StackNavigator} from "react-navigation";
 import Main from './components/Main';
 import Editor from './components/Editor';
 import SaveImage from './components/SaveImage';
+import About from './components/About';
 
 
 class App extends React.Component {
@@ -31,6 +32,9 @@ export default StackNavigator(
     {
         Main: {
             screen: App,
+        },
+		About: {
+            screen: About,
         },
         Editor: {
             screen: Editor,
