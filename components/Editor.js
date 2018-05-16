@@ -16,12 +16,14 @@ import {
 } from 'react-native';
 import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
 import {WebGLView} from "react-native-webgl";
+import RNFetchBlob from 'react-native-fetch-blob'
 import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
 import UnsharpMask from "./UnsharpMask";
 import LinearFiltration from "./LinearFiltration";
 import Retouch from './Retouch';
 import Bokeh from './Bokeh';
+
 
 
 let filters = require('../libs/filters.js');

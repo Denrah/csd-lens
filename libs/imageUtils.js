@@ -1,5 +1,6 @@
 import React from 'react';
 import { NativeModules } from 'react-native';
+import RNFetchBlob from 'react-native-fetch-blob'
 
 let savePixelsToFile = async function(name, pixels, width, height) {
 	let res;
@@ -46,10 +47,10 @@ let getPixelsArray = async function (path) {
  * @param height
  * @returns {Promise<string>}
  */
-let  getBase64FromPixels = async function(pixels, width, height) {
+let getBase64FromPixels = async function(pixels, width, height) {
     let res = "";
 
-    await new Promise((resolve, reject) => {
+    /*await new Promise((resolve, reject) => {
         NativeModules.Bitmap.getBase64FromPixels(pixels, width, height, (err, data) => {
             if (err) {
                 return reject(err);
@@ -57,6 +58,48 @@ let  getBase64FromPixels = async function(pixels, width, height) {
             resolve(data);
         });
     }).then(function (data) {
+        res = data;
+    });*/
+	
+	const dirs = RNFetchBlob.fs.dirs;
+	const fs = RNFetchBlob.fs;
+	await new Promise((resolve, reject) => {
+	RNFetchBlob.fs.exists(dirs.DocumentDir+'/temp.txt')
+	.then((exist) => {
+		if (exist) {
+			fs.writeFile(dirs.DocumentDir+'/temp.txt', JSON.stringify(pixels), 'utf8').then(()=>{				
+				new Promise((resolve, reject) => {
+					NativeModules.Bitmap.saveImageToFileFromFile(dirs.DocumentDir+'/temp.txt', width, height, (err, data) => {
+						if (err) {
+							return reject(err);
+						}
+						resolve(data);
+					});
+				}).then(function (data) {
+					RNFetchBlob.fs.readFile(data, 'base64')
+					.then((data1) => {
+						resolve(data1);						
+					})
+				});				
+			});
+		} else {
+			fs.createFile(dirs.DocumentDir+'/temp.txt', JSON.stringify(pixels), 'utf8').then(()=>{
+				new Promise((resolve, reject) => {
+					NativeModules.Bitmap.saveImageToFileFromFile(dirs.DocumentDir+'/temp.txt', width, height, (err, data) => {
+						if (err) {
+							return reject(err);
+						}
+						resolve(data);
+					});
+				}).then(function (data) {
+					RNFetchBlob.fs.readFile(data, 'base64')
+					.then((data1) => {						
+						resolve(data1);
+					})
+				});						
+			});
+		}
+	})}).then(function (data) {
         res = data;
     });
 
