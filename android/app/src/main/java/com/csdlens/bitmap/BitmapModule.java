@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.File;
+import java.io.FileReader;
+import java.io.BufferedReader;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
@@ -240,6 +242,42 @@ class BitmapModule extends ReactContextBaseJavaModule {
 			out.flush();
             out.close();
             callback.invoke(null, imageName + ".jpg");
+        } catch (Exception e) {
+            callback.invoke(e.getMessage());
+        }
+	}
+	@ReactMethod
+	private void saveImageToFileFromFile(final String path, int width, int height, final Callback callback) {
+		try {
+			File file_tmp = new File(path); 
+			StringBuilder text = new StringBuilder();
+
+			BufferedReader br = new BufferedReader(new FileReader(file_tmp));
+			String line;
+
+			while ((line = br.readLine()) != null) {
+				text.append(line);
+				text.append('\n');
+			}
+			br.close();
+			
+            int[] pixels = new int[width * height];		
+			
+
+			JSONArray data = new JSONArray(text.toString());
+            for(int i = 0; i < width*height; i++)
+                pixels[i] = Integer.parseInt(data.optString(i));			
+            Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+            Bitmap image = Bitmap.createBitmap(width, height, conf);
+            image.setPixels(pixels, 0, width, 0, 0, width, height);
+			File outputDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "LensEditor");   
+            outputDir.mkdirs(); 
+			File file = new File(outputDir, "csd_cache.jpg");
+			FileOutputStream out = new FileOutputStream(file.getAbsolutePath());   
+            image.compress(Bitmap.CompressFormat.JPEG, 100, out);   
+			out.flush();
+            out.close();
+            callback.invoke(null, file.getAbsolutePath());
         } catch (Exception e) {
             callback.invoke(e.getMessage());
         }
