@@ -14,7 +14,7 @@ export default class SaveImage extends React.Component {
             title: 'Save image',
             headerStyle: {
                 backgroundColor: '#000',
-                height: 40,
+                height: 50,
             },
             headerTintColor: '#fff',
             headerTitleStyle: {

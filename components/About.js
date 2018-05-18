@@ -10,7 +10,7 @@ export default class About extends React.Component {
             title: 'About',
             headerStyle: {
                 backgroundColor: '#000',
-                height: 40,
+                height: 50,
             },
             headerTintColor: '#fff',
             headerTitleStyle: {

@@ -13,7 +13,7 @@ class App extends React.Component {
 		title: 'CSD Lens',
         headerStyle: {
             backgroundColor: '#000',
-            height: 40,
+            height: 50,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
