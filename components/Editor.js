@@ -14,8 +14,6 @@ import {
     ToastAndroid,
 	NativeModules,
 } from 'react-native';
-import Canvas, {Image as CanvasImage, Path2D} from 'react-native-canvas';
-import {WebGLView} from "react-native-webgl";
 import RNFetchBlob from 'react-native-fetch-blob'
 import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
@@ -40,23 +38,23 @@ export default class Editor extends React.Component {
             title: 'Edit image',
             headerStyle: {
                 backgroundColor: '#000',
-                height: 40,
+                height: 50,
             },
             headerTintColor: '#fff',
             headerTitleStyle: {
                 fontWeight: 'normal',
             },
             headerRight: (
-				<View style={{width: 60, flex: 1, flexDirection: 'row', alignItems: "center", justifyContent: "center"}}>
+				<View style={{width: 120, flex: 1, flexDirection: 'row', alignItems: "center", justifyContent: "center"}}>
 					<TouchableOpacity onPress={params.setResizeMode}>
 						<Image style={{
-							width: 20, height: 20, marginRight: 10
+							width: 30, height: 30, marginRight: 10
 						}} source={params.resizeImage}>
 						</Image>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={params.savePicture}>
 						<Image style={{
-							width: 20, height: 20, marginRight: 10
+							width: 37, height: 30, marginRight: 0
 						}} source={require('../assets/ui/save.png')}>
 						</Image>
 					</TouchableOpacity>
@@ -76,7 +74,6 @@ export default class Editor extends React.Component {
 			newHeight: null,
             width: null,
             height: null,
-            canvas: null,
             loadingBar: null,
             rotationValue: null,
             currentPanel: null,
@@ -109,8 +106,6 @@ export default class Editor extends React.Component {
                 width: 0,
                 height: 0
             },
-            rngl: null,
-            gl: null,
             drawableDots: null,
             imageMode: "contain",
             panelIndex: 1,
@@ -160,62 +155,8 @@ export default class Editor extends React.Component {
 			imageSource: this.state.baseSource,
             retouchCircle: null,
 			bokehRect: null,
+			pixels: this.state.basePixels
         });
-    }
-
-    updateImage(src, callback) {
-        this.state.gl.viewport(0, 0, this.state.gl.drawingBufferWidth, this.state.gl.drawingBufferHeight);
-        let buffer = this.state.gl.createBuffer();
-        this.state.gl.bindBuffer(this.state.gl.ARRAY_BUFFER, buffer);
-        this.state.gl.bufferData(
-            this.state.gl.ARRAY_BUFFER,
-            new Float32Array([-1, -1, -1, 4, 4, -1]),
-            this.state.gl.STATIC_DRAW
-        );
-        let vertexShader = this.state.gl.createShader(this.state.gl.VERTEX_SHADER);
-        this.state.gl.shaderSource(
-            vertexShader,
-            `\
-			attribute vec2 p;
-			varying vec2 uv;
-			void main() {
-			  gl_Position = vec4(p,1.0,1.0);
-			  uv = 0.5 * (p+1.0);
-			}`
-        );
-        this.state.gl.compileShader(vertexShader);
-        const fragmentShader = this.state.gl.createShader(this.state.gl.FRAGMENT_SHADER);
-        this.state.gl.shaderSource(
-            fragmentShader,
-            `\
-			precision highp float;
-			varying vec2 uv;
-			uniform sampler2D t;
-			void main() {
-			  gl_FragColor = texture2D(t, uv);
-			}`
-        );
-        this.state.gl.compileShader(fragmentShader);
-        let program = this.state.gl.createProgram();
-        this.state.gl.attachShader(program, vertexShader);
-        this.state.gl.attachShader(program, fragmentShader);
-        this.state.gl.linkProgram(program);
-        this.state.gl.useProgram(program);
-        let p = this.state.gl.getAttribLocation(program, "p");
-        this.state.gl.enableVertexAttribArray(p);
-        this.state.gl.vertexAttribPointer(p, 2, this.state.gl.FLOAT, false, 0, 0);
-        this.state.rngl
-            .loadTexture({image: src, yflip: true})
-            .then(({texture}) => {
-                this.state.gl.activeTexture(this.state.gl.TEXTURE0);
-                this.state.gl.bindTexture(this.state.gl.TEXTURE_2D, texture);
-                this.state.gl.drawArrays(this.state.gl.TRIANGLES, 0, 3);
-                this.state.gl.flush();
-                this.state.rngl.endFrame();
-            });
-        //
-        if (typeof callback == "function")
-            callback();
     }
 
     setResizeMode() {
@@ -430,12 +371,6 @@ export default class Editor extends React.Component {
 				newWidth: n_width,
 				newHeight: n_height
             });
-            /*imageUtils.getBase64FromPixels(crop_pixels, n_width, n_height).then(res => {
-                this.setState({
-                    imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                    loadingBar: null
-                });
-            });*/
         });
     }
 
@@ -524,45 +459,7 @@ export default class Editor extends React.Component {
 				{
 					new_pixels[i] = -1;
 				}
-			}
-			
-            /*let w_result = parseInt(this.state.width / 100 * size);
-            let h_result = parseInt(this.state.height / 100 * size);
-
-            let new_pixels = new Array(w_result * h_result);
-
-            let e1, e2, e3, e4, x, y, index;
-            let x_ratio = parseFloat(this.state.width - 1 / w_result);
-            let y_ratio = parseFloat(this.state.height - 1 / h_result);
-            let x_diff, y_diff;
-            let offset = 0;
-            for (let i = 0; i < h_result; i++) {
-                for (let j = 0; j < w_result; j++) {
-
-                    x = parseInt(x_ratio * j);
-                    y = parseInt(y_ratio * i);
-                    x_diff = parseFloat((x_ratio * j) - x);
-                    y_diff = parseFloat((y_ratio * i) - y);
-                    index = y * this.state.width + x;
-
-                    e1 = index;
-                    e2 = index + 1;
-                    e3 = index + this.state.width;
-                    e4 = index + this.state.width + 1;
-
-                    let rgba = new Array(4);
-
-                    for (let ri = 0; ri < 2; ri++) {
-                        rgba[ri] = imageUtils.toColorArr(this.state.basePixels[e1])[ri] * (1 - x_diff) * (1 - y_diff) + imageUtils.toColorArr(this.state.basePixels[e2])[ri] * (x_diff) * (1 - y_diff) + imageUtils.toColorArr(this.state.basePixels[e3])[ri] * (y_diff) * (1 - x_diff) + imageUtils.toColorArr(this.state.basePixels[e4])[ri] * (x_diff * y_diff);
-                    }
-
-
-                    rgba[3] = imageUtils.toColorArr(this.state.basePixels[e1])[3];
-
-
-                    new_pixels[offset++] = imageUtils.RGBToInt(imageUtils.normalaizeColors(rgba));
-                }
-            }*/
+			}           
 
             this.setState({
                 pixels: new_pixels,
@@ -801,32 +698,10 @@ export default class Editor extends React.Component {
                 imageSource: {uri: response.uri},
 				baseSource: {uri: response.uri},
                 loadingBar: null,
-                //canvas: <Canvas ref={this.handleCanvas}/>
             });
         });
     }
 
-    /*handleCanvas(canvas) {
-        const image = new CanvasImage(canvas);
-
-        canvas.width = 300;
-        canvas.height = 300;
-
-        const ctx = canvas.getContext('2d');
-        const img = new CanvasImage(canvas);
-        console.log("data:image/jpeg;base64," + response.data);
-        image.src = "data:image/jpeg;base64," + response.data;
-        image.addEventListener('load', () => {
-            console.log('image is loaded');
-
-            ctx.drawImage(image, 0, 0, 2, 2).then(() => {
-                imageData = ctx.getImageData(0, 0, 2, 2).then(function(imageData) {
-                    console.log(imageData);
-                });
-
-            });
-        });
-    }*/
 
     filterCallback(val) {
 		this.setState({
@@ -1590,21 +1465,6 @@ export default class Editor extends React.Component {
         });
     }
 
-    /*onContextCreate = (gl: WebGLRenderingContext) => {
-		this.setState({
-			gl: gl,
-			rngl: gl.getExtension("RN")
-		}, () => {
-			let width = this.state.gl.drawingBufferWidth;
-			let height = this.state.gl.drawingBufferHeight;
-			let rngl = this.state.rngl;
-			let gl = this.state.gl;
-			this.updateImage("http://i.imgur.com/tCatS2c.jpg", function(){
-				var pixels = new Uint8Array(width * height * 4);
-				gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);//async
-			});		
-		});
-    };*/
 
     render() {
         return (
@@ -1617,10 +1477,6 @@ export default class Editor extends React.Component {
                         }
                     })
                 }} style={styles.imageDesk}>
-                    {/*<WebGLView
-                        style={{ width: 100, height: 100 }}
-                        onContextCreate={this.onContextCreate}
-                    />*/}
                     <TouchableWithoutFeedback onPress={(e) => this.handleImageTouch(e)}>
                         <ImageBackground resizeMode={this.state.imageMode} source={this.state.imageSource}
                                          style={styles.uploadImage}>
@@ -1636,34 +1492,46 @@ export default class Editor extends React.Component {
                 </View>
                 <View style={styles.bottomBar}>
                     <TouchableOpacity onPress={() => this.choosePanel("filter")}>
-                        <Text style={{color: this.state.navigationColors.filters, fontSize: 14}}>FILTER</Text>
+                        <Image resizeMode={"contain"} style={{
+							width: 40, height: 40, padding: 5, tintColor: this.state.navigationColors.filters
+						}} source={require('../assets/ui/filter.png')}/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("size")}>
-                        <Text style={{color: this.state.navigationColors.sizeAndRot, fontSize: 14}}>SIZE&ROT</Text>
+                        <Image resizeMode={"contain"} style={{
+							width: 40, height: 40, tintColor: this.state.navigationColors.sizeAndRot
+						}} source={require('../assets/ui/size_rotate.png')}/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("usm")}>
-                        <Text style={{color: this.state.navigationColors.unsharpMask, fontSize: 14}}>USM</Text>
+                        <Image resizeMode={"contain"} style={{
+							width: 63, height: 40, tintColor: this.state.navigationColors.unsharpMask
+						}} source={require('../assets/ui/mask.png')}/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("lin")}>
-                        <Text style={{color: this.state.navigationColors.linearFiltration, fontSize: 14}}>BL</Text>
+                        <Image resizeMode={"contain"} style={{
+							width: 40, height: 40, tintColor: this.state.navigationColors.linearFiltration
+						}} source={require('../assets/ui/bilinear.png')}/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("reto")}>
-                        <Text style={{color: this.state.navigationColors.retouch, fontSize: 14}}>RETO</Text>
+						<Image resizeMode={"contain"} style={{
+							width: 40, height: 40, tintColor: this.state.navigationColors.retouch
+						}} source={require('../assets/ui/retouch.png')}/>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.choosePanel("bokeh")}>
-                        <Text style={{color: this.state.navigationColors.bokeh, fontSize: 14}}>BOKEH</Text>
+                         <Image resizeMode={"contain"} style={{
+							width: 40, height: 40, tintColor: this.state.navigationColors.bokeh
+						}} source={require('../assets/ui/bokeh.png')}/>
                     </TouchableOpacity>
                 </View>
 				{this.state.wasChanged ? <View style={styles.bottomBar}>
 					<TouchableOpacity onPress={this.cancelSavePixels.bind(this)}>
 						<Image style={{
-							width: 20, height: 20
+							width: 40, height: 40
 						}} source={require('../assets/ui/cross.png')}>
 						</Image>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={this.savePixels.bind(this)}>
 						<Image style={{
-							width: 20, height: 20
+							width: 40, height: 40
 						}} source={require('../assets/ui/tick.png')}>
 						</Image>
 					</TouchableOpacity>
@@ -1699,7 +1567,6 @@ const styles = StyleSheet.create({
         height: 40,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingTop: 10,
         paddingLeft: 15,
         paddingRight: 15,
         borderTopColor: '#00CF68',
