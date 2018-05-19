@@ -1,13 +1,13 @@
 import React from 'react';
 import {
-    StyleSheet,
-    View,
+    Image,
     ImageBackground,
     ProgressBarAndroid,
-    Image,
+    StyleSheet,
+    ToastAndroid,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    ToastAndroid,
+    View,
 } from 'react-native';
 import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
@@ -24,6 +24,11 @@ let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse"/>;
 
 export default class Editor extends React.Component {
 
+    /**
+     * Configuring navigation header
+     * @param navigation
+     * @returns {{title: string, headerStyle: {backgroundColor: string, height: number}, headerTintColor: string, headerTitleStyle: {fontWeight: string}, headerRight: *}}
+     */
     static navigationOptions = ({navigation}) => {
         const params = navigation.state.params || {resizeImage: require('../assets/ui/full_size.png')};
         return {
@@ -56,6 +61,10 @@ export default class Editor extends React.Component {
         }
     };
 
+    /**
+     * Method called before component is mounted
+     * @param props
+     */
     constructor(props) {
         super(props);
         this.state = {
@@ -126,6 +135,9 @@ export default class Editor extends React.Component {
         this.savePicture = this.savePicture.bind(this);
     }
 
+    /**
+     * Opens save image page
+     */
     savePicture() {
         this.props.navigation.navigate('SaveImage', {
             image: this.state.baseSource,
@@ -135,6 +147,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Saves pixels as base pixels
+     */
     savePixels() {
         this.setState({
             basePixels: this.state.pixels,
@@ -147,6 +162,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Canceling saving of pixels
+     */
     cancelSavePixels() {
         this.setState({
             wasChanged: false,
@@ -157,6 +175,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Set resize mode of image to contain or cover imagebox
+     */
     setResizeMode() {
 
         if (this.state.panelIndex === 4 || this.state.panelIndex === 5 || this.state.panelIndex === 6) {
@@ -174,6 +195,9 @@ export default class Editor extends React.Component {
         }
     }
 
+    /**
+     * Implements sepia effect
+     */
     sepia() {
         this.setState({
             loadingBar: loadingBar
@@ -203,6 +227,9 @@ export default class Editor extends React.Component {
         }, 10);
     }
 
+    /**
+     * Implements grayscale effect
+     */
     grayscale() {
         this.setState({
             loadingBar: loadingBar
@@ -233,6 +260,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Implements threshold effect (called NOIR in filters tab)
+     */
     threshold() {
         this.setState({
             loadingBar: loadingBar
@@ -265,6 +295,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Implements inverting effect
+     */
     invert() {
         this.setState({
             loadingBar: loadingBar
@@ -295,6 +328,10 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Rotating image on given angle
+     * @param angle
+     */
     rotate(angle) {
         let b_angle = (angle % 90) * (Math.PI / 180);
         angle = -angle * (Math.PI / 180);
@@ -376,6 +413,10 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Resizing image to given size
+     * @param size
+     */
     resize(size) {
         this.setState({
             loadingBar: loadingBar
@@ -448,7 +489,7 @@ export default class Editor extends React.Component {
 
                 if (npX >= 0 && npY >= 0 && npX < this.state.newWidth && npY < this.state.newHeight) {
                     if (k > 1)
-                        new_pixels[i] = this.bilinearFilter(npX, npY, this.state.pixels, this.state.newWidth);
+                        new_pixels[i] = this.bilinearFiltration(npX, npY, this.state.pixels, this.state.newWidth);
                     else if (k < 1)
                         new_pixels[i] = this.trilinearFiltration(npX, npY, pixels_size1, pixels_size2, ps1w, ps2w, p1, p2, dk);
                     else
@@ -472,6 +513,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Canceling all filter effects
+     */
     norm() {
         this.setState({
             loadingBar: loadingBar
@@ -490,6 +534,14 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Implementing image filtering using convolution matrix
+     * @param weights
+     * @param pixelsData
+     * @param width
+     * @param height
+     * @returns {*}
+     */
     convolution(weights, pixelsData, width, height) {
         let new_pixels = [];
         this.setState({
@@ -527,7 +579,12 @@ export default class Editor extends React.Component {
         return new_pixels;
     }
 
-
+    /**
+     * Implementing unsharp mask effect
+     * @param radius
+     * @param amount
+     * @param threshold
+     */
     unsharpMask(radius, amount, threshold) {
         this.setState({
             loadingBar: loadingBar,
@@ -588,6 +645,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Implementing sharpness filter
+     */
     sharp() {
         this.setState({
             wasChanged: true,
@@ -613,6 +673,9 @@ export default class Editor extends React.Component {
 
     }
 
+    /**
+     * Implementing edge detection filter
+     */
     edgeDetection() {
         this.setState({
             wasChanged: true,
@@ -637,6 +700,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Implementing emboss filter
+     */
     emboss() {
         this.setState({
             wasChanged: true,
@@ -671,6 +737,10 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Implementing sobel filter
+     * @returns {Promise<void>}
+     */
     async sobel() {
         this.setState({
             wasChanged: true,
@@ -703,6 +773,9 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Invoked immediately after a component is mounted.
+     */
     componentDidMount() {
         this.props.navigation.setParams({
             setResizeMode: this.setResizeMode,
@@ -733,7 +806,10 @@ export default class Editor extends React.Component {
         });
     }
 
-
+    /**
+     * Callback function for filters tab
+     * @param val
+     */
     filterCallback(val) {
         this.setState({
             wasChanged: true,
@@ -770,6 +846,11 @@ export default class Editor extends React.Component {
         }
     }
 
+    /**
+     * Callback function for size and rotation tab
+     * @param size
+     * @param rot
+     */
     sizeAndRotCallback(size, rot) {
         this.setState({
             loadingBar: loadingBar,
@@ -784,6 +865,10 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Callback function for linear filtration tab
+     * @param type
+     */
     linearFiltration(type) {
         switch (type) {
             case "set":
@@ -823,6 +908,10 @@ export default class Editor extends React.Component {
         }
     }
 
+    /**
+     * Function to change tools panels
+     * @param panel
+     */
     choosePanel(panel) {
         this.setState({
             imageSource: this.state.baseSource
@@ -923,6 +1012,9 @@ export default class Editor extends React.Component {
         }
     }
 
+    /**
+     * Function to show base dots in linear filtration tool
+     */
     drawDots() {
         this.setState({
             drawableDots: (
@@ -962,7 +1054,15 @@ export default class Editor extends React.Component {
         });
     }
 
-    bilinearFilter(npX, npY, matrix, w) {
+    /**
+     * Implementing bilinear filtration method
+     * @param npX
+     * @param npY
+     * @param matrix
+     * @param w
+     * @returns {*|number}
+     */
+    bilinearFiltration(npX, npY, matrix, w) {
         let color = [];
         let r1 = 0, g1 = 0, b1 = 0;
         let r2 = 0, g2 = 0, b2 = 0;
@@ -1002,6 +1102,19 @@ export default class Editor extends React.Component {
         return imageUtils.RGBToInt(imageUtils.normalaizeColors([r1 + r2, g1 + g2, b1 + b2, 1]));
     }
 
+    /**
+     * Implementing trilinear filtration method
+     * @param npX
+     * @param npY
+     * @param pixels_size1
+     * @param pixels_size2
+     * @param ps1w
+     * @param ps2w
+     * @param p1
+     * @param p2
+     * @param dk
+     * @returns {*|number}
+     */
     trilinearFiltration(npX, npY, pixels_size1, pixels_size2, ps1w, ps2w, p1, p2, dk) {
 
 
@@ -1121,7 +1234,9 @@ export default class Editor extends React.Component {
         return imageUtils.RGBToInt(imageUtils.normalaizeColors([tr1, tg1, tb1, 1]));
     }
 
-
+    /**
+     * Implementing affine transformations method
+     */
     dotsToImageCoordinates() {
         this.setState({
             wasChanged: true,
@@ -1236,7 +1351,7 @@ export default class Editor extends React.Component {
             if (Math.floor(npX) >= 0 && Math.ceil(npX) < this.state.width && Math.floor(npY) >= 0 && Math.ceil(npY) < this.state.height) {
                 if (delta < 1) {
 
-                    new_pixels[i] = this.bilinearFilter(npX, npY, this.state.basePixels, this.state.width);
+                    new_pixels[i] = this.bilinearFiltration(npX, npY, this.state.basePixels, this.state.width);
 
                 }
                 else {
@@ -1264,6 +1379,11 @@ export default class Editor extends React.Component {
 
     }
 
+    /**
+     * Retouch panel callback
+     * @param radius
+     * @param amount
+     */
     retouchCallback(radius, amount) {
         this.setState({
             retouchRadius: radius,
@@ -1272,6 +1392,10 @@ export default class Editor extends React.Component {
 
     }
 
+    /**
+     * Bokeh panel callback
+     * @param amount
+     */
     bokehCallback(amount) {
         this.setState({
             bokehAmount: amount,
@@ -1290,6 +1414,10 @@ export default class Editor extends React.Component {
         });
     }
 
+    /**
+     * Handle user touches on imagebox
+     * @param e
+     */
     handleImageTouch(e) {
 
         if (this.state.panelIndex === 5) {
@@ -1408,7 +1536,7 @@ export default class Editor extends React.Component {
             if (bokehY > this.state.height)
                 bokehY = this.state.height;
 
-            if (this.state.bokehCount == 0) {
+            if (this.state.bokehCount === 0) {
                 this.setState({
                     bokehRect: null,
                     bokehCount: 1,
@@ -1507,7 +1635,10 @@ export default class Editor extends React.Component {
         });
     }
 
-
+    /**
+     * Method that render UI
+     * @returns {*}
+     */
     render() {
         return (
             <View style={styles.container}>
@@ -1584,6 +1715,10 @@ export default class Editor extends React.Component {
     }
 }
 
+/**
+ * Element styles
+ * @type {*|{panHandlers, getInteractionHandle}|Config|StyleSheet<S>|{type, property}|any}
+ */
 const styles = StyleSheet.create({
     container: {
         flex: 1,
