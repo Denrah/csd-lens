@@ -2,6 +2,15 @@ import React from 'react';
 import {NativeModules} from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob'
 
+/**
+ * Saves result image to file in storage
+ * @param name
+ * @param pixels
+ * @param width
+ * @param height
+ * @returns {Promise<*>}
+ */
+
 let savePixelsToFile = async function (name, pixels, width, height) {
     let res;
     await new Promise((resolve, reject) => {
@@ -16,10 +25,10 @@ let savePixelsToFile = async function (name, pixels, width, height) {
     });
 
     return res;
-}
+};
 
 /**
- *
+ * Gets array of pixels from image
  * @param path
  * @returns {Promise<Array>}
  */
@@ -41,7 +50,7 @@ let getPixelsArray = async function (path) {
 };
 
 /**
- *
+ *  Gets base64 image from array of pixels
  * @param pixels
  * @param width
  * @param height
@@ -49,18 +58,6 @@ let getPixelsArray = async function (path) {
  */
 let getBase64FromPixels = async function (pixels, width, height, path = false) {
     let res = "";
-
-    /*await new Promise((resolve, reject) => {
-        NativeModules.Bitmap.getBase64FromPixels(pixels, width, height, (err, data) => {
-            if (err) {
-                return reject(err);
-            }
-            resolve(data);
-        });
-    }).then(function (data) {
-        res = data;
-    });*/
-
     const dirs = RNFetchBlob.fs.dirs;
     const fs = RNFetchBlob.fs;
     await new Promise((resolve, reject) => {
@@ -115,6 +112,18 @@ let getBase64FromPixels = async function (pixels, width, height, path = false) {
     return res;
 };
 
+/**
+ * Implements bokeh effect using OpenCV library
+ * @param amount
+ * @param pixels
+ * @param width
+ * @param height
+ * @param x1
+ * @param y1
+ * @param x2
+ * @param y2
+ * @returns {Promise<Array>}
+ */
 let getOpenCVBokehFromPixels = async function (amount, pixels, width, height, x1, y1, x2, y2) {
     let res = [];
 
@@ -133,7 +142,7 @@ let getOpenCVBokehFromPixels = async function (amount, pixels, width, height, x1
 };
 
 /**
- *
+ * Converts color number to RGBA array
  * @param num
  * @returns {*[]}
  */
@@ -147,7 +156,7 @@ let toColorArr = function (num) {
 };
 
 /**
- *
+ * Converts RGBA array to color number
  * @param colors
  * @returns {number}
  * @constructor
@@ -157,7 +166,7 @@ let RGBToInt = function (colors) {
 };
 
 /**
- *
+ * Normalizing color array to values from 0 to 255
  * @param colors
  * @returns {*}
  */

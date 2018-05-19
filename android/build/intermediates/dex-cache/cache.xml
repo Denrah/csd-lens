@@ -7,8 +7,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="9236445249b688377917bbf182bb651ba5a9c5f1">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.facebook.react-react-native-0.54.4_e1d0f91fd6fa2e2355596ff1353c41e0d35a722e.jar" />
+=======
+        sha1="aa92916125166649d8ad4ba3940c3dd7515596d3">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\internal_impl-23.0.1_0f333559d49b1cd71eac732dfcdc64087bc99ea0.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -16,8 +21,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="d29714cc76b38157e3cbd034c66e1ec808eb4c19">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.android.support-support-vector-drawable-25.0.0_2ce41ef6e5ee3eaf7f4e79ab771ecf5346387e4b.jar" />
+=======
+        sha1="69edde9fc4b01c9fd51d25b83428837478c27254">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\okhttp-3.6.0_fa8ff31b4a5b2d116e0899170ecd558c3b2536db.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -25,8 +35,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="3b61a70884adaf0be3fc06c70c801e3e6df13133">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\internal_impl-25.0.0_dc8f11a69395ea98e67d4baa7a92131a2e68ba9b.jar" />
+=======
+        sha1="6975da39a7040257bd51d21a231b76c915872d38">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\javax.inject-1_0ec32237b6cbe98ec82bdf6643bb0deb0f9d3117.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -53,7 +68,11 @@
         optimize="true"
         revision="23.0.1"
         sha1="37345de2ed2772f385eaeec37a9c2ff0fea99ad7">
+<<<<<<< HEAD
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.facebook.fresco-fbcore-1.3.0_78d1759a1dfcd646ffbb8a3eaa748a864e71ccc6.jar" />
+=======
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.fresco-fbcore-1.3.0_31a03fe3112c2e00bc1970b77cf7c0773a50bf1f.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -61,8 +80,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="8bc45ce1f63d1a391fd38b32a201be5a42f9c95d">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.android.support-appcompat-v7-25.0.0_3bdcada549d4dc8b7bee6e1e99c9e93133a32f15.jar" />
+=======
+        sha1="c65a2e39d54023bac3aef64a2f0cff89289c7ff6">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.fresco-drawee-1.3.0_fec3d7875bc9472819174b7213b6e9521c59abd8.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -70,8 +94,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="ee5faf4dee5b6a4364bf51587871047dde7c703a">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\internal_impl-25.0.0_2b1f244ab0877153f9fade4732ed70c37caeab85.jar" />
+=======
+        sha1="fe85b87215e405f5917d40ae4960488ac9224b74">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.fresco-fresco-1.3.0_ad2b0f8dba19d18fa98d7d660a0e48218c1caaec.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -79,8 +108,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="c03c08c9934b23c8c09c803345ec51a74119127b">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.facebook.fresco-imagepipeline-okhttp3-1.3.0_f0ab0680563cd32ee0169d708353bffb746f6660.jar" />
+=======
+        sha1="72128af126ddd7d6252da9357fe560d3abcdfb0c">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.fresco-imagepipeline-base-1.3.0_747cd9ee7fc8414df16c99972e7910d491fffe74.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -88,8 +122,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="f162442a19fff13995fbd51ba414d9ee05579080">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\staticlayout-proxy-1.0_f7743ed965eae3ae91cc33d9ced79ac994aa914b.jar" />
+=======
+        sha1="5871fb60dc68d67da54a663c3fd636a10a532948">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\jsr305-3.0.0_537fa7f6b7f052700aabbc47178e56750afedc73.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -97,8 +136,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="d7c42c80f6509b9ea4db28ca7859ffae08ec5741">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.android.support-support-v4-25.0.0_06ecb534a870563ea02a4fada6833abc65dcf37a.jar" />
+=======
+        sha1="9809e90be788acdb479b2b44e2112f3295a03068">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\infer-annotations-4.0_09fec056fa4c41e855bf3ca8ee419742833512ee.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -106,8 +150,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="fe85b87215e405f5917d40ae4960488ac9224b74">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.facebook.fresco-fresco-1.3.0_3d8047bc2c6768fa62fc2aaddaba2a7dc19cf563.jar" />
+=======
+        sha1="c31e21b53ff2f74664e498248d01453a32e32d48">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.android.support-support-v4-23.0.1_a0d6ee8d6c569d10dcb60f70d078578484486617.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -115,8 +164,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="53a420cd4f49274db6bd43475f8006ba67ef6bbd">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.android.support-animated-vector-drawable-25.0.0_fda85a6685c81bf88c284e9dfb5f5cd478b1a0e0.jar" />
+=======
+        sha1="c41a678f09cadbffce8693d0a8510cd77cbd97fa">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\csdlens-openCVLibrary341-unspecified_bc682b454e9d5ad975673e746e574a3e771635c4.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -124,8 +178,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="76fb65a4b41ea42dab8a1310ed772a2420c96b52">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.android.support-support-media-compat-25.0.0_e912642380785373b0d8f319a5fb90af212524a2.jar" />
+=======
+        sha1="8f615bca00639150c9eb6175d4b5471193f70794">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.soloader-soloader-0.1.0_08e6c4189a4a615d7f627f7798e0ce1480b68ab2.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -133,8 +192,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="f2e3b9bc1ec25f652e8007ce7774c991e38f6a00">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\internal_impl-25.0.0_60560205f012cdbe02c30ef51f57e261e5fa3224.jar" />
+=======
+        sha1="3f9b16b774f2c36cfd86dd2053d0b3059531dacc">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\okhttp-urlconnection-3.6.0_ec05b3e6b37798c8c039b80d4a363bf4a3ea40c2.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -142,8 +206,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="a22d2cc94da87b254451fa8ed28afc30b4653773">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\support-annotations-25.0.0_8402fabc8c6cdb8689be13ff407e99cce8e28a3b.jar" />
+=======
+        sha1="1fce89a6428c51467090d7f424e4c9c3dbd55f7e">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\support-annotations-23.0.1_9b5b63ac59568370a7003286f75db74e2711966b.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -151,8 +220,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="d85884acf6810a3bbbecb587f239005cbc846dc4">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\bolts-tasks-1.4.0_e967602cedb3cdf27c5916205188b8064fdde338.jar" />
+=======
+        sha1="9236445249b688377917bbf182bb651ba5a9c5f1">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.react-react-native-0.54.4_662a322004ec9495af5d6262c72e9777fd1a3e2c.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -160,8 +234,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="26674000177e45447a0326a6ad84612761199a13">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.android.support-support-core-ui-25.0.0_6bdd7481817b3a665a92bd63007fda1dfea43e42.jar" />
+=======
+        sha1="ad3c33c320b4d0b7504e97aa46a185dea8bd1f1c">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\csdlens-react-native-image-picker-unspecified_a65885ab3f09ef8a318657891e1e42b54075e575.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -170,7 +249,11 @@
         optimize="true"
         revision="23.0.1"
         sha1="48c7f54c2515a2312d3a4481d10c43fbb807f3af">
+<<<<<<< HEAD
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.facebook.fresco-imagepipeline-1.3.0_a83b650432e3de925893bdd8a51ea6421e7a10c4.jar" />
+=======
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.fresco-imagepipeline-1.3.0_867b428ff71daff0b42b417452bfcbbf12f4ba4e.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -178,8 +261,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="a414a889c4004abe91b048820c3f755cec060327">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\csdlens-react-native-fetch-blob-unspecified_45cd19581fbd26d257818559a6572a82a4f26fda.jar" />
+=======
+        sha1="649c1730bc66af75eab20d72489d2ce712cdb019">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\csdlens-react-native-fetch-blob-unspecified_e47492586a042d604581ccaeda2fd434ecf712fe.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -187,8 +275,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="f90b593491e4044903f0bbf68dc3fa2790b151b9">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.facebook.fbui.textlayoutbuilder-textlayoutbuilder-1.0.0_71e6e5a8af83787b9d38000b76dfbf131abe999e.jar" />
+=======
+        sha1="d86429b0f0b3f3cafbeb78dda1b9d89119ccb05d">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.android.support-appcompat-v7-23.0.1_3898797650b4efe69b9744f04d8ea22ae780fe3e.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -224,7 +317,11 @@
         optimize="true"
         revision="23.0.1"
         sha1="a9283170b7305c8d92d25aff02a6ab7e45d06cbe">
+<<<<<<< HEAD
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\okio-1.13.0_38b74e4be266d69e70035860c1bf242ab4307618.jar" />
+=======
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\okio-1.13.0_2be8f60d7108e82fecdd51a65cf19c64babd9cbc.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -232,8 +329,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="72128af126ddd7d6252da9357fe560d3abcdfb0c">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.facebook.fresco-imagepipeline-base-1.3.0_dbedf2f78f3ad57d8890897f8b0e436d9c41b003.jar" />
+=======
+        sha1="d85884acf6810a3bbbecb587f239005cbc846dc4">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\bolts-tasks-1.4.0_b1396d514a9339a924417c98543abf281f08dc88.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -241,8 +343,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="c65a2e39d54023bac3aef64a2f0cff89289c7ff6">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\com.facebook.fresco-drawee-1.3.0_b0cc7ec173efb12e191308c9ef29d1251e4184c7.jar" />
+=======
+        sha1="f90b593491e4044903f0bbf68dc3fa2790b151b9">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.fbui.textlayoutbuilder-textlayoutbuilder-1.0.0_a661ce97b7f5db22b14c8c46016e3598d0edfb95.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -250,8 +357,13 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="6975da39a7040257bd51d21a231b76c915872d38">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\javax.inject-1_e7d52a1fa3d62fd3795a5ceab5dee21cce7ba14f.jar" />
+=======
+        sha1="c03c08c9934b23c8c09c803345ec51a74119127b">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\com.facebook.fresco-imagepipeline-okhttp3-1.3.0_9e9163720b1d5c80b15dcb3b20955bd5886fc09c.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
     <item
         is-multidex="false"
@@ -259,6 +371,7 @@
         jumboMode="false"
         optimize="true"
         revision="23.0.1"
+<<<<<<< HEAD
         sha1="5871fb60dc68d67da54a663c3fd636a10a532948">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\jsr305-3.0.0_3a3ed28e08e17cfd74280d4f4729ed886de33500.jar" />
     </item>
@@ -324,6 +437,10 @@
         revision="23.0.1"
         sha1="4bc7e4c88d8a58037f153bc224b47da51ae40f2f">
         <dex dex="C:\Users\User\Documents\csd-lens\android\app\build\intermediates\pre-dexed\debug\csdlens-react-native-image-picker-unspecified_46e6a25ec3f0ac9b9c2a158f7eceaa0cde6510aa.jar" />
+=======
+        sha1="f162442a19fff13995fbd51ba414d9ee05579080">
+        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\release\staticlayout-proxy-1.0_2c20fbed7eaeedb50e8c1ac6bd930509e919c893.jar" />
+>>>>>>> 27931b5bd7a9482a4e0c4f8fba00922859ca9835
     </item>
 
 </items>
