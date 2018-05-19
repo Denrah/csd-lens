@@ -55,13 +55,19 @@ export default class SaveImage extends React.Component {
         });
 
     }
-	
-	shareImage() {
+
+    shareImage() {
         this.setState({loadingBar: loadingBar}, () => {
             setTimeout(() => {
                 imageUtils.getBase64FromPixels(this.props.navigation.state.params.pixels, this.props.navigation.state.params.width, this.props.navigation.state.params.height, true).then(res => {
-					Share.open({title: "Share", message: "", url: "file://"+res, subject: "Share Link","social": "whatsapp"});					
-					this.setState({loadingBar: null});
+                    Share.open({
+                        title: "Share",
+                        message: "",
+                        url: "file://" + res,
+                        subject: "Share Link",
+                        "social": "whatsapp"
+                    });
+                    this.setState({loadingBar: null});
                 });
             }, 10);
         });
@@ -71,16 +77,18 @@ export default class SaveImage extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <Image source={this.state.image} style={{width: 300, height: 300, marginTop: 30, marginBottom: 30}}
+                <Image source={this.state.image} style={{flex: 0.6, alignSelf: 'stretch'}}
                        resizeMode={"contain"}/>
-                <Button color={"#00CF68"} title={"Save picture"}
-                        onPress={this.saveImage.bind(this)}/>
-				<View style={{flex:1 , marginTop:15}} >
-					<Button color={"#00CF68"} title={"Share picture"}
-                        onPress={this.shareImage.bind(this)}/>
-				</View>
-                {this.state.loadingBar}
-                {(this.state.loadingBar !== null) ? <View style={styles.overlay}></View> : null}
+                <View style={{flex: 0.4, paddingTop: 30}}>
+                    <Button color={"#00CF68"} title={"Save picture"}
+                            onPress={this.saveImage.bind(this)}/>
+                    <View style={{marginTop: 15}}>
+                        <Button color={"#00CF68"} title={"Share picture"}
+                                onPress={this.shareImage.bind(this)}/>
+                    </View>
+                    {this.state.loadingBar}
+                    {(this.state.loadingBar !== null) ? <View style={styles.overlay}></View> : null}
+                </View>
             </View>
         );
     }

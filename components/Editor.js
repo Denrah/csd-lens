@@ -333,6 +333,7 @@ export default class Editor extends React.Component {
      * @param angle
      */
     rotate(angle) {
+        let f_angle = angle;
         let b_angle = (angle % 90) * (Math.PI / 180);
         angle = -angle * (Math.PI / 180);
         this.setState({
@@ -363,7 +364,7 @@ export default class Editor extends React.Component {
 
             let new_pixels_filter = [];
 
-            if (angle !== 0) {
+            if (f_angle !== 0 && f_angle !== 180 && f_angle !== 90 && f_angle !== 270 && f_angle !== 360) {
                 let weights = [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9];
                 let side = Math.round(Math.sqrt(weights.length));
                 let halfSide = Math.floor(side / 2);
