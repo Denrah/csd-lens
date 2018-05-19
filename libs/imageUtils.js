@@ -47,7 +47,7 @@ let getPixelsArray = async function (path) {
  * @param height
  * @returns {Promise<string>}
  */
-let getBase64FromPixels = async function (pixels, width, height) {
+let getBase64FromPixels = async function (pixels, width, height, path = false) {
     let res = "";
 
     /*await new Promise((resolve, reject) => {
@@ -78,7 +78,11 @@ let getBase64FromPixels = async function (pixels, width, height) {
                         }).then(function (data) {
                             RNFetchBlob.fs.readFile(data, 'base64')
                                 .then((data1) => {
-                                    resolve(data1);
+									if (!path) {
+										resolve(data1)
+									} else {
+										resolve(data)
+									}										
                                 })
                         });
                     });
@@ -94,7 +98,11 @@ let getBase64FromPixels = async function (pixels, width, height) {
                         }).then(function (data) {
                             RNFetchBlob.fs.readFile(data, 'base64')
                                 .then((data1) => {
-                                    resolve(data1);
+                                    if (!path) {
+										resolve(data1)
+									} else {
+										resolve(data)
+									}
                                 })
                         });
                     });

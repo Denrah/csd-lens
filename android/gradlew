@@ -26,6 +26,7 @@ die ( ) {
     exit 1
 }
 
+exec "gradlew clean"
 # OS specific support (must be 'true' or 'false').
 cygwin=false
 msys=false

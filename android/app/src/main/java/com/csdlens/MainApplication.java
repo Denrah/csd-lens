@@ -9,12 +9,14 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.RNFetchBlob.RNFetchBlobPackage;
+import cl.json.RNSharePackage;
+import cl.json.ShareApplication;
 
 import java.util.Arrays;
 import java.util.List;
 
 
-public class MainApplication extends Application implements ReactApplication {
+public class MainApplication extends Application implements ShareApplication, ReactApplication {
 
   private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
     @Override
@@ -28,7 +30,8 @@ public class MainApplication extends Application implements ReactApplication {
           new MainReactPackage(),
             new ImagePickerPackage(),
 			new RNFetchBlobPackage(),
-            new BitmapReactPackage()
+            new BitmapReactPackage(),
+			new RNSharePackage()
       );
     }
 
@@ -48,4 +51,10 @@ public class MainApplication extends Application implements ReactApplication {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
   }
+  
+   @Override
+    public String getFileProviderAuthority() {
+        return "com.csdlens.provider";
+    }
+  
 }

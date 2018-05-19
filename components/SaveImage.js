@@ -1,9 +1,12 @@
 import React from 'react';
 import {StyleSheet, Text, View, Button, Image, ProgressBarAndroid, TextInput, ToastAndroid} from 'react-native';
 import {StackNavigator} from 'react-navigation';
+import Share, {ShareSheet} from 'react-native-share';
+import RNFetchBlob from 'react-native-fetch-blob'
 
 let ImagePicker = require('react-native-image-picker');
 let imageUtils = require('../libs/imageUtils.js');
+
 
 let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse"/>;
 
@@ -52,6 +55,18 @@ export default class SaveImage extends React.Component {
         });
 
     }
+	
+	shareImage() {
+        this.setState({loadingBar: loadingBar}, () => {
+            setTimeout(() => {
+                imageUtils.getBase64FromPixels(this.props.navigation.state.params.pixels, this.props.navigation.state.params.width, this.props.navigation.state.params.height, true).then(res => {
+					Share.open({title: "Share", message: "", url: "file://"+res, subject: "Share Link","social": "whatsapp"});					
+					this.setState({loadingBar: null});
+                });
+            }, 10);
+        });
+
+    }
 
     render() {
         return (
@@ -60,6 +75,10 @@ export default class SaveImage extends React.Component {
                        resizeMode={"contain"}/>
                 <Button color={"#00CF68"} title={"Save picture"}
                         onPress={this.saveImage.bind(this)}/>
+				<View style={{flex:1 , marginTop:15}} >
+					<Button color={"#00CF68"} title={"Share picture"}
+                        onPress={this.shareImage.bind(this)}/>
+				</View>
                 {this.state.loadingBar}
                 {(this.state.loadingBar !== null) ? <View style={styles.overlay}></View> : null}
             </View>
