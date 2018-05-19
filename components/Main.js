@@ -12,14 +12,15 @@ let options = {
     }
 };
 
-let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse" />;
+let loadingBar = <ProgressBarAndroid color={"#00CF68"} styleAttr="Inverse"/>;
 
 export default class Main extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            loadingBar: null
+            loadingBar: null,
+            overlay: false
         };
     }
 
@@ -28,28 +29,38 @@ export default class Main extends React.Component {
     }
 
     selectImage() {
+        this.setState({
+            overlay: true
+        });
         ImagePicker.showImagePicker(options, (response) => {
 
             if (response.didCancel) {
-                console.log('User cancelled image picker');
+                this.setState({
+                    overlay: false
+                });
             }
             else if (response.error) {
-                console.log('ImagePicker Error: ', response.error);
+                this.setState({
+                    overlay: false
+                });
             }
             else if (response.customButton) {
-                console.log('User tapped custom button: ', response.customButton);
+                this.setState({
+                    overlay: false
+                });
             }
             else {
-				this.setState({
-					loadingBar: loadingBar
-				});
-				setTimeout(() => {
-					this.props.navigation.navigate('Editor', {response: response});
-					this.setState({
-						loadingBar: null
-					});
-				}, 10);
-				
+                this.setState({
+                    loadingBar: loadingBar
+                });
+                setTimeout(() => {
+                    this.props.navigation.navigate('Editor', {response: response});
+                    this.setState({
+                        loadingBar: null,
+                        overlay: false
+                    });
+                }, 10);
+
             }
         });
     }
@@ -57,16 +68,21 @@ export default class Main extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-				<ImageBackground source={require('../assets/ui/mm_bg.jpg')}  style={styles.bgImage}>
-					<Image source={require('../assets/ui/splash.png')} style={{width: 300, height: 80, marginTop: -20, marginBottom: 50}} resizeMode={"cover"} />
-					<View style={{width: 150, height: 80, justifyContent: "space-between"}}>
-						<Button color={"#00CF68"} title={"Choose picture"} style={{alignSelf: 'stretch', marginBottom: 10}} onPress={this.selectImage.bind(this)}/>
-						<Button color={"#00CF68"} title={"About"} style={{alignSelf: 'stretch'}} onPress={() => {this.props.navigation.navigate('About');}}/>
-					</View>
-					<View style={{height: 60, justifyContent: "center"}}>
-						{this.state.loadingBar}
-					</View>
-				</ImageBackground>
+                <ImageBackground source={require('../assets/ui/mm_bg.jpg')} style={styles.bgImage}>
+                    <Image source={require('../assets/ui/splash.png')}
+                           style={{width: 300, height: 80, marginTop: -20, marginBottom: 50}} resizeMode={"cover"}/>
+                    <View style={{width: 150, height: 80, justifyContent: "space-between"}}>
+                        <Button color={"#00CF68"} title={"Choose picture"}
+                                style={{alignSelf: 'stretch', marginBottom: 10}} onPress={this.selectImage.bind(this)}/>
+                        <Button color={"#00CF68"} title={"About"} style={{alignSelf: 'stretch'}} onPress={() => {
+                            this.props.navigation.navigate('About');
+                        }}/>
+                    </View>
+                    <View style={{height: 60, justifyContent: "center"}}>
+                        {this.state.loadingBar}
+                    </View>
+                </ImageBackground>
+                {(this.state.loadingBar !== null || this.state.overlay) ? <View style={styles.overlay}></View> : null}
             </View>
         );
     }
@@ -79,7 +95,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-	bgImage: {
+    bgImage: {
         position: "absolute",
         bottom: 0,
         left: 0,
@@ -92,5 +108,13 @@ const styles = StyleSheet.create({
     uploadAvatar: {
         width: 200,
         height: 200,
+    },
+    overlay: {
+        position: "absolute",
+        backgroundColor: "transparent",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
     }
 });

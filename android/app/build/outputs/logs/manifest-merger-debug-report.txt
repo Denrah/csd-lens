@@ -15,7 +15,6 @@ ADDED from D:\work\csd-lens\android\app\src\main\AndroidManifest.xml:1:1-30:12
 		INJECTED from D:\work\csd-lens\android\app\src\main\AndroidManifest.xml
 uses-permission#android.permission.INTERNET
 ADDED from D:\work\csd-lens\android\app\src\main\AndroidManifest.xml:4:5-67
-MERGED from [csdlens:react-native-webgl:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-webgl\unspecified\AndroidManifest.xml:15:5-67
 	android:name
 		ADDED from D:\work\csd-lens\android\app\src\main\AndroidManifest.xml:4:22-64
 uses-permission#android.permission.SYSTEM_ALERT_WINDOW
@@ -87,7 +86,6 @@ ADDED from D:\work\csd-lens\android\app\src\main\AndroidManifest.xml:27:9-86
 uses-sdk
 INJECTED from D:\work\csd-lens\android\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 MERGED from [csdlens:react-native-image-picker:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-image-picker\unspecified\AndroidManifest.xml:7:5-9:41
-MERGED from [csdlens:react-native-webgl:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-webgl\unspecified\AndroidManifest.xml:7:5-9:41
 MERGED from [csdlens:react-native-fetch-blob:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-fetch-blob\unspecified\AndroidManifest.xml:7:5-9:41
 MERGED from [com.facebook.react:react-native:0.54.4] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\com.facebook.react\react-native\0.54.4\AndroidManifest.xml:7:5-9:41
 MERGED from [com.android.support:appcompat-v7:23.0.1] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\23.0.1\AndroidManifest.xml:20:5-43
@@ -123,15 +121,5 @@ ADDED from [csdlens:react-native-image-picker:unspecified] D:\work\csd-lens\andr
 		ADDED from [csdlens:react-native-image-picker:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-image-picker\unspecified\AndroidManifest.xml:19:17-55
 	android:name
 		ADDED from [csdlens:react-native-image-picker:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-image-picker\unspecified\AndroidManifest.xml:18:17-67
-uses-feature#0x00020000
-ADDED from [csdlens:react-native-webgl:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-webgl\unspecified\AndroidManifest.xml:11:5-13:35
-	android:glEsVersion
-		ADDED from [csdlens:react-native-webgl:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-webgl\unspecified\AndroidManifest.xml:12:9-41
-	android:required
-		ADDED from [csdlens:react-native-webgl:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-webgl\unspecified\AndroidManifest.xml:13:9-32
-uses-permission#android.permission.ACCESS_NETWORK_STATE
-ADDED from [csdlens:react-native-webgl:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-webgl\unspecified\AndroidManifest.xml:16:5-79
-	android:name
-		ADDED from [csdlens:react-native-webgl:unspecified] D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-webgl\unspecified\AndroidManifest.xml:16:22-76
 android:uses-permission#android.permission.READ_PHONE_STATE
 IMPLIED from D:\work\csd-lens\android\app\src\main\AndroidManifest.xml:1:1-30:12 reason: org.webkit.android_jsc has a targetSdkVersion < 4

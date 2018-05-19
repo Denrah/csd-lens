@@ -9,8 +9,8 @@ import About from './components/About';
 
 class App extends React.Component {
 
-	static navigationOptions = {
-		title: 'CSD Lens',
+    static navigationOptions = {
+        title: 'LENS',
         headerStyle: {
             backgroundColor: '#000',
             height: 50,
@@ -19,11 +19,11 @@ class App extends React.Component {
         headerTitleStyle: {
             fontWeight: 'normal',
         },
-	};
+    };
 
     render() {
         return (
-            <Main navigation={this.props.navigation} />
+            <Main navigation={this.props.navigation}/>
         );
     }
 }
@@ -33,15 +33,15 @@ export default StackNavigator(
         Main: {
             screen: App,
         },
-		About: {
+        About: {
             screen: About,
         },
         Editor: {
             screen: Editor,
         },
-		SaveImage: {
-			screen: SaveImage,
-		},
+        SaveImage: {
+            screen: SaveImage,
+        },
     },
     {
         initialRouteName: 'Main',

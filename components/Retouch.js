@@ -24,13 +24,17 @@ export default class Retouch extends React.Component {
     onAmountChange(val) {
         this.setState({
             amountValue: val
-        }, () => {this.invokeCallback()});
+        }, () => {
+            this.invokeCallback()
+        });
     }
 
     onRadiusChange(val) {
         this.setState({
             radiusValue: val
-        }, () => {this.invokeCallback()});
+        }, () => {
+            this.invokeCallback()
+        });
     }
 
     render() {
@@ -61,8 +65,10 @@ export default class Retouch extends React.Component {
                         maximumTrackTintColor={"#CCC"}
                     />
                 </View>
-                <View style={{flex: 0.2, alignItems: 'center', flexDirection: 'column', justifyContent: 'space-between',
-                    paddingTop: 31, paddingBottom: 13}}>
+                <View style={{
+                    flex: 0.2, alignItems: 'center', flexDirection: 'column', justifyContent: 'space-between',
+                    paddingTop: 31, paddingBottom: 13
+                }}>
                     <Text style={{color: "white"}}>{this.state.radiusValue}</Text>
                     <Text style={{color: "white"}}>{this.state.amountValue}</Text>
                 </View>

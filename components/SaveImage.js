@@ -56,10 +56,12 @@ export default class SaveImage extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <Image source={this.state.image} style={{width: 300, height: 300, marginTop: 30, marginBottom: 30}} resizeMode={"contain"}/>
+                <Image source={this.state.image} style={{width: 300, height: 300, marginTop: 30, marginBottom: 30}}
+                       resizeMode={"contain"}/>
                 <Button color={"#00CF68"} title={"Save picture"}
                         onPress={this.saveImage.bind(this)}/>
                 {this.state.loadingBar}
+                {(this.state.loadingBar !== null) ? <View style={styles.overlay}></View> : null}
             </View>
         );
     }
@@ -70,5 +72,13 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#1D1D1D',
         alignItems: 'center',
+    },
+    overlay: {
+        position: "absolute",
+        backgroundColor: "transparent",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
     }
 });

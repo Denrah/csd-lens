@@ -3,15 +3,6 @@
 
     <item
         is-multidex="false"
-        jar="D:\work\csd-lens\android\app\build\intermediates\exploded-aar\csdlens\react-native-webgl\unspecified\jars\classes.jar"
-        jumboMode="false"
-        optimize="true"
-        revision="23.0.1"
-        sha1="678ed1381eeb983b90cbd0c62b8312022d363f4d">
-        <dex dex="D:\work\csd-lens\android\app\build\intermediates\pre-dexed\debug\csdlens-react-native-webgl-unspecified_24b2ada23689fddc8b87d7290f056730bed5e6e8.jar" />
-    </item>
-    <item
-        is-multidex="false"
         jar="D:\work\csd-lens\android\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.0.1\jars\libs\internal_impl-23.0.1.jar"
         jumboMode="false"
         optimize="true"

@@ -84,7 +84,7 @@ export default class FiltersBar extends React.Component {
                         }}>BACK</Text>
                     </ImageBackground>
                 </TouchableOpacity>
-				<TouchableOpacity onPress={() => this.invokeCallback("emboss")} style={{paddingRight: 15}}>
+                <TouchableOpacity onPress={() => this.invokeCallback("emboss")} style={{paddingRight: 15}}>
                     <ImageBackground style={{
                         width: 70, height: 70, alignItems: 'center',
                         justifyContent: 'center',

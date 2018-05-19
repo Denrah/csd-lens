@@ -9,7 +9,7 @@ export default class LinearFiltration extends React.Component {
         this.invokeCallback = this.invokeCallback.bind(this);
         this.state = {
             rotationValue: 0,
-			sizeValue: 0,
+            sizeValue: 0,
         };
     }
 
@@ -17,44 +17,48 @@ export default class LinearFiltration extends React.Component {
 
     }
 
-	invokeCallback(val) {
-		switch(val)
-		{
-			case "clear":
-				this.props.callbackFunction("clear");
-				break;
-			case "set":
-				this.props.callbackFunction("set");
-				break;
-		}
-	}
+    invokeCallback(val) {
+        switch (val) {
+            case "clear":
+                this.props.callbackFunction("clear");
+                break;
+            case "set":
+                this.props.callbackFunction("set");
+                break;
+        }
+    }
 
 
     render() {
         return (
-			<View style={styles.container}>
-				<View style={{flex: 0.6, alignItems: 'center', justifyContent: 'center'}}>
-					<Text style={{color: "white"}}>Select {(this.props.dotsCount < 3) ? (3 - this.props.dotsCount) + " base dots" : (6 - this.props.dotsCount) + " target dots"}</Text>
-				</View>
-				<View style={{flex: 0.2, alignItems: 'center', justifyContent: 'center'}}>
-					<Button color={"#00CF68"} title={"Clear"} style={styles.setButton} onPress={() => {this.invokeCallback("clear")}} />
-				</View>
-				<View style={{flex: 0.2, alignItems: 'center', justifyContent: 'center'}}>
-					<Button color={"#00CF68"} title={"Set"} style={styles.setButton} onPress={() => {this.invokeCallback("set")}} />
-				</View>
-			</View>
+            <View style={styles.container}>
+                <View style={{flex: 0.6, alignItems: 'center', justifyContent: 'center'}}>
+                    <Text
+                        style={{color: "white"}}>Select {(this.props.dotsCount < 3) ? (3 - this.props.dotsCount) + " base dots" : (6 - this.props.dotsCount) + " target dots"}</Text>
+                </View>
+                <View style={{flex: 0.2, alignItems: 'center', justifyContent: 'center'}}>
+                    <Button color={"#00CF68"} title={"Clear"} style={styles.setButton} onPress={() => {
+                        this.invokeCallback("clear")
+                    }}/>
+                </View>
+                <View style={{flex: 0.2, alignItems: 'center', justifyContent: 'center'}}>
+                    <Button color={"#00CF68"} title={"Set"} style={styles.setButton} onPress={() => {
+                        this.invokeCallback("set")
+                    }}/>
+                </View>
+            </View>
         );
     }
 }
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		flexDirection: "row"
-	},
-	sliderStyle: {
-		alignSelf: 'stretch',
-	},
-	setButton: {
-		flex: 1,
-	}
+    container: {
+        flex: 1,
+        flexDirection: "row"
+    },
+    sliderStyle: {
+        alignSelf: 'stretch',
+    },
+    setButton: {
+        flex: 1,
+    }
 });
