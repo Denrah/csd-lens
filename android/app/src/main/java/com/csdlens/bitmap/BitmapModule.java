@@ -202,7 +202,7 @@ class BitmapModule extends ReactContextBaseJavaModule {
 		options.inJustDecodeBounds = true;
 		BitmapFactory.decodeFile(imageName, options);
 		
-		options.inSampleSize = calculateInSampleSize(options, 500, 500);
+		options.inSampleSize = calculateInSampleSize(options, 300, 300);
 
 		options.inJustDecodeBounds = false;
         Bitmap bitmap = BitmapFactory.decodeFile(imageName, options);
