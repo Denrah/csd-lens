@@ -334,14 +334,14 @@ export default class Editor extends React.Component {
      */
     rotate(angle) {
         let f_angle = angle;
-        let b_angle = (angle % 90) * (Math.PI / 180);
+        let b_angle = (angle) * (Math.PI / 180);
         angle = -angle * (Math.PI / 180);
         this.setState({
             loadingBar: loadingBar
         }, () => {
             let tw = Math.max(this.state.width, this.state.height);
             let th = Math.min(this.state.width, this.state.height);
-            let k = 1 / ((tw / th) * Math.sin(b_angle) + Math.cos(b_angle));
+            let k = 1 / ((tw / th) * Math.abs(Math.sin(b_angle)) + Math.abs(Math.cos(b_angle)));
             let n_width = Math.floor(this.state.width * k);
             let n_height = Math.floor(this.state.height * k);
             let dx = Math.ceil((this.state.width - n_width) / 2);
