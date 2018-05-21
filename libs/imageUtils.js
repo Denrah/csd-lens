@@ -62,48 +62,33 @@ let getBase64FromPixels = async function (pixels, width, height, path = false) {
     const fs = RNFetchBlob.fs;
     await new Promise((resolve, reject) => {
         RNFetchBlob.fs.exists(dirs.DocumentDir + '/temp.txt')
-            .then((exist) => {
-                if (exist) {
-                    fs.writeFile(dirs.DocumentDir + '/temp.txt', JSON.stringify(pixels), 'utf8').then(() => {
-                        new Promise((resolve, reject) => {
-                            NativeModules.Bitmap.saveImageToFileFromFile(dirs.DocumentDir + '/temp.txt', width, height, (err, data) => {
-                                if (err) {
-                                    return reject(err);
-                                }
-                                resolve(data);
-                            });
-                        }).then(function (data) {
-                            RNFetchBlob.fs.readFile(data, 'base64')
-                                .then((data1) => {
-									if (!path) {
-										resolve(data1)
-									} else {
-										resolve(data)
-									}										
-                                })
-                        });
-                    });
-                } else {
-                    fs.createFile(dirs.DocumentDir + '/temp.txt', JSON.stringify(pixels), 'utf8').then(() => {
-                        new Promise((resolve, reject) => {
-                            NativeModules.Bitmap.saveImageToFileFromFile(dirs.DocumentDir + '/temp.txt', width, height, (err, data) => {
-                                if (err) {
-                                    return reject(err);
-                                }
-                                resolve(data);
-                            });
-                        }).then(function (data) {
-                            RNFetchBlob.fs.readFile(data, 'base64')
+            .then((exist) => {				
+				if (!exist) {
+					fs.createFile(dirs.DocumentDir + '/temp.txt', '', 'utf8');
+				}
+				RNFetchBlob.fs.writeStream(dirs.DocumentDir + '/temp.txt', 'utf8')
+				.then((stream) => {
+					stream.write(JSON.stringify(pixels))
+					stream.close();
+					new Promise((resolve, reject) => {
+						NativeModules.Bitmap.saveImageToFileFromFile(dirs.DocumentDir + '/temp.txt', width, height, (err, data) => {
+							if (err) {
+								return reject(err);
+							}
+							resolve(data);
+						});
+					}).then(function (data) {
+						RNFetchBlob.fs.readFile(data, 'base64')
                                 .then((data1) => {
                                     if (!path) {
 										resolve(data1)
 									} else {
 										resolve(data)
 									}
-                                })
-                        });
-                    });
-                }
+                                })				
+					});
+				});
+				
             })
     }).then(function (data) {
         res = data;
