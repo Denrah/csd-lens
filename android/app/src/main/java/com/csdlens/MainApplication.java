@@ -11,6 +11,7 @@ import com.facebook.soloader.SoLoader;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import cl.json.RNSharePackage;
 import cl.json.ShareApplication;
+import com.zmxv.RNSound.RNSoundPackage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +32,8 @@ public class MainApplication extends Application implements ShareApplication, Re
             new ImagePickerPackage(),
 			new RNFetchBlobPackage(),
             new BitmapReactPackage(),
-			new RNSharePackage()
+			new RNSharePackage(),
+			new RNSoundPackage()
       );
     }
 

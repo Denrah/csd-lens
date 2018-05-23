@@ -1,6 +1,7 @@
 import React from 'react';
 import {NativeModules} from 'react-native';
-import RNFetchBlob from 'react-native-fetch-blob'
+import RNFetchBlob from 'react-native-fetch-blob';
+import Sound from 'react-native-sound';
 
 /**
  * Saves result image to file in storage
@@ -11,6 +12,9 @@ import RNFetchBlob from 'react-native-fetch-blob'
  * @returns {Promise<*>}
  */
 
+let sound = new Sound('done.wav', Sound.MAIN_BUNDLE).setVolume(0.5);
+
+ 
 let savePixelsToFile = async function (name, pixels, width, height) {
     let res;
     await new Promise((resolve, reject) => {
@@ -100,7 +104,10 @@ let getBase64FromPixels = async function (pixels, width, height, path = false) {
     }).then(function (data) {
         res = data;
     });
-
+	
+	sound.stop();
+	sound.play();
+	
     return res;
 };
 
@@ -129,6 +136,9 @@ let getOpenCVBokehFromPixels = async function (amount, pixels, width, height, x1
     }).then(function (data) {
         res = data;
     });
+	
+	sound.stop();
+	sound.play();
 
     return res;
 };
