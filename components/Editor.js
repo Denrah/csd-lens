@@ -151,7 +151,7 @@ export default class Editor extends React.Component {
             height: this.state.height
         });
     }
-
+	
     /**
      * Saves pixels as base pixels
      */
@@ -369,7 +369,7 @@ export default class Editor extends React.Component {
 
             let new_pixels_filter = [];
 
-            if (f_angle !== 0 && f_angle !== 180 && f_angle !== 90 && f_angle !== 270 && f_angle !== 360) {
+            if (f_angle % 90 !== 0) {
                 let weights = [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9];
                 let side = Math.round(Math.sqrt(weights.length));
                 let halfSide = Math.floor(side / 2);
@@ -1548,6 +1548,7 @@ export default class Editor extends React.Component {
         }
 
 =======
+		//Retouch tool
 >>>>>>> 6034a2e7875bcd4338f25b9a04174a492f4e3ee1
         if (this.state.panelIndex === 5) {
             this.setState({
