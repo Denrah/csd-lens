@@ -80,20 +80,19 @@ let getBase64FromPixels = async function (pixels, width, height, path = false) {
 					}).then(function (data) {
 						RNFetchBlob.fs.readStream(data, 'base64', width*height*8, -1)
 						.then((stream) => {
-							let data1 = ''
-							stream.open()
+							let data1 = '';
+							stream.open();
 							stream.onData((chunk) => {
 								data1 += chunk
-							})
+							});
 							stream.onEnd(() => {
-								console.log(data1);
 								if (!path) {
 									resolve(data1)
 								} else {
 									resolve(data)
 								}
-							})
-						})						
+							});
+						});
 					});
 				});
 				

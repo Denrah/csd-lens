@@ -118,8 +118,8 @@ export default class Editor extends React.Component {
             retouchX: 0,
             retouchY: 0,
             bokehAmount: 1,
-            bokehX1: 0,
-            bokehY1: 0,
+            bokehX1: 1,
+            bokehY1: 1,
             bokehX2: 0,
             bokehY2: 0,
             bokehXscreen1: 0,
@@ -797,7 +797,9 @@ export default class Editor extends React.Component {
                 width: res[1],
                 height: res[2],
                 newWidth: res[1],
-                newHeight: res[2]
+                newHeight: res[2],
+                bokehX2: res[1],
+                bokehY2: res[2],
             });
             this.setState({
                 imageSource: {uri: response.uri},
@@ -927,10 +929,30 @@ export default class Editor extends React.Component {
                         unsharpMask: "white",
                         linearFiltration: "white",
                         retouch: "white",
-                        bokeh: "white"
+                        bokeh: "white",
+                    },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
                     },
                     panelIndex: 1
+                }, () => {
+                    this.drawDots()
                 });
+
                 break;
             case "size":
                 this.setState({
@@ -943,7 +965,26 @@ export default class Editor extends React.Component {
                         retouch: "white",
                         bokeh: "white"
                     },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    },
                     panelIndex: 2
+                }, () => {
+                    this.drawDots()
                 });
                 break;
             case "usm":
@@ -955,9 +996,28 @@ export default class Editor extends React.Component {
                         unsharpMask: "#00CF68",
                         linearFiltration: "white",
                         retouch: "white",
-                        bokeh: "white"
+                        bokeh: "white",
+                    },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
                     },
                     panelIndex: 3
+                }, () => {
+                    this.drawDots()
                 });
                 break;
             case "lin":
@@ -988,7 +1048,26 @@ export default class Editor extends React.Component {
                         retouch: "#00CF68",
                         bokeh: "white"
                     },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    },
                     panelIndex: 5
+                }, () => {
+                    this.drawDots()
                 });
                 if (this.state.imageMode === "cover")
                     this.setResizeMode();
@@ -1002,9 +1081,28 @@ export default class Editor extends React.Component {
                         unsharpMask: "white",
                         linearFiltration: "white",
                         retouch: "white",
-                        bokeh: "#00CF68"
+                        bokeh: "#00CF68",
+                    },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
                     },
                     panelIndex: 6
+                }, () => {
+                    this.drawDots()
                 });
                 if (this.state.imageMode === "cover")
                     this.setResizeMode();
@@ -1242,7 +1340,7 @@ export default class Editor extends React.Component {
         this.setState({
             wasChanged: true,
         });
-        let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
+        let k = (this.state.width / this.state.height > this.state.imageContainer.width / this.state.imageContainer.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
         let tmp = this.state.transformDotsCoordinates;
         for (let key in this.state.transformDotsCoordinates) {
             tmp[key].x = Math.round(this.state.transformDots[key].x * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0));
@@ -1428,9 +1526,11 @@ export default class Editor extends React.Component {
             });
 
 
-            let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
+            let k = (this.state.width / this.state.height > this.state.imageContainer.width / this.state.imageContainer.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
             let retouchX = Math.round(e.nativeEvent.locationX * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0)),
                 retouchY = Math.round(e.nativeEvent.locationY * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
+
+            console.log(k, this.state.width, this.state.imageContainer.width, this.state.height, this.state.imageContainer.height);
 
             this.setState({
                 retouchCircle: <View style={[styles.retouchCircle, {
@@ -1524,7 +1624,7 @@ export default class Editor extends React.Component {
             this.setState({
                 wasChanged: true,
             });
-            let k = (this.state.width > this.state.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
+            let k = (this.state.width / this.state.height > this.state.imageContainer.width / this.state.imageContainer.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
             let bokehX = Math.round(e.nativeEvent.locationX * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0)),
                 bokehY = Math.round(e.nativeEvent.locationY * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
 
