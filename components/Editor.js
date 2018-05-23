@@ -128,6 +128,11 @@ export default class Editor extends React.Component {
             bokehYscreen2: 0,
             bokehCount: 0,
             bokehRect: null,
+            resizeX: 0,
+            resizeY: 0,
+            imageResizeX: 0,
+            imageResizeY: 0,
+            resizeDot: null
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
@@ -485,8 +490,8 @@ export default class Editor extends React.Component {
                 let pX = i % this.state.newWidth - parseInt(this.state.newWidth / 2);
                 let pY = parseInt(i / this.state.newWidth) - parseInt(this.state.newHeight / 2);
 
-                let npX = Math.round(pX / k) + parseInt(this.state.newWidth / 2);
-                let npY = Math.round(pY / k) + parseInt(this.state.newHeight / 2);
+                let npX = Math.round(pX / k) + parseInt(this.state.newWidth/2 + this.state.newWidth*(1-k)/2 + this.state.imageResizeX * (k-1));
+                let npY = Math.round(pY / k) + parseInt(this.state.newHeight/2 + this.state.newHeight*(1-k)/2 + this.state.imageResizeY * (k-1));
 
                 if (npX >= 0 && npY >= 0 && npX < this.state.newWidth && npY < this.state.newHeight) {
                     if (k > 1)
@@ -800,6 +805,8 @@ export default class Editor extends React.Component {
                 newHeight: res[2],
                 bokehX2: res[1],
                 bokehY2: res[2],
+                imageResizeX: res[1]/2,
+                imageResizeY: res[2]/2,
             });
             this.setState({
                 imageSource: {uri: response.uri},
@@ -1519,6 +1526,23 @@ export default class Editor extends React.Component {
      */
     handleImageTouch(e) {
 
+        if(this.state.panelIndex === 2)
+        {
+            let k = (this.state.width / this.state.height > this.state.imageContainer.width / this.state.imageContainer.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
+            let resizeX = Math.round(e.nativeEvent.locationX * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0)),
+                resizeY = Math.round(e.nativeEvent.locationY * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
+
+            this.setState({
+                resizeDot: <View style={[styles.circle, {
+                    backgroundColor: '#00CF68',
+                    left: e.nativeEvent.locationX - 2,
+                    top: e.nativeEvent.locationY - 2
+                }]}/>,
+                imageResizeX: resizeX,
+                imageResizeY: resizeY,
+            });
+        }
+
         if (this.state.panelIndex === 5) {
             this.setState({
                 wasChanged: true,
@@ -1530,7 +1554,6 @@ export default class Editor extends React.Component {
             let retouchX = Math.round(e.nativeEvent.locationX * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0)),
                 retouchY = Math.round(e.nativeEvent.locationY * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
 
-            console.log(k, this.state.width, this.state.imageContainer.width, this.state.height, this.state.imageContainer.height);
 
             this.setState({
                 retouchCircle: <View style={[styles.retouchCircle, {
@@ -1758,6 +1781,7 @@ export default class Editor extends React.Component {
                             {this.state.retouchCircle}
                             {this.state.bokehRect}
                             {this.state.loadingBar}
+                            {this.state.resizeDot}
                         </ImageBackground>
                     </TouchableWithoutFeedback>
                 </View>
