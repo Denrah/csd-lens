@@ -28,12 +28,12 @@
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_list_menu_item_checkbox.xml"
     },
     {
-        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\fps_view.xml",
-        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.facebook.react\\react-native\\0.54.4\\res\\layout\\fps_view.xml"
-    },
-    {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_template_big_media_narrow.xml",
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\notification_template_big_media_narrow.xml"
+    },
+    {
+        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\fps_view.xml",
+        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.facebook.react\\react-native\\0.54.4\\res\\layout\\fps_view.xml"
     },
     {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_template_part_chronometer.xml",
@@ -52,12 +52,12 @@
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\notification_media_action.xml"
     },
     {
-        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_template_big_media_narrow_custom.xml",
-        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\notification_template_big_media_narrow_custom.xml"
-    },
-    {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_action_bar_up_container.xml",
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_action_bar_up_container.xml"
+    },
+    {
+        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_template_big_media_narrow_custom.xml",
+        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\notification_template_big_media_narrow_custom.xml"
     },
     {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_screen_simple.xml",
@@ -72,16 +72,16 @@
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\select_dialog_item_material.xml"
     },
     {
+        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_action.xml",
+        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\notification_action.xml"
+    },
+    {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_action_mode_close_item_material.xml",
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_action_mode_close_item_material.xml"
     },
     {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\support_simple_spinner_dropdown_item.xml",
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\support_simple_spinner_dropdown_item.xml"
-    },
-    {
-        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_action.xml",
-        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\notification_action.xml"
     },
     {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\redbox_view.xml",
@@ -102,10 +102,6 @@
     {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_search_view.xml",
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_search_view.xml"
-    },
-    {
-        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_template_lines.xml",
-        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\23.0.1\\res\\layout\\notification_template_lines.xml"
     },
     {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_template_lines_media.xml",
@@ -140,12 +136,12 @@
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.facebook.react\\react-native\\0.54.4\\res\\layout\\redbox_item_frame.xml"
     },
     {
-        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_action_menu_layout.xml",
-        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_action_menu_layout.xml"
-    },
-    {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_alert_dialog_button_bar_material.xml",
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_alert_dialog_button_bar_material.xml"
+    },
+    {
+        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_action_menu_layout.xml",
+        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_action_menu_layout.xml"
     },
     {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_search_dropdown_item_icons_2line.xml",
@@ -196,11 +192,11 @@
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.facebook.react\\react-native\\0.54.4\\res\\layout\\redbox_item_title.xml"
     },
     {
-        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_screen_content_include.xml",
-        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_screen_content_include.xml"
-    },
-    {
         "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\notification_template_part_time.xml",
         "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\notification_template_part_time.xml"
+    },
+    {
+        "merged": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\res\\merged\\debug\\layout\\abc_screen_content_include.xml",
+        "source": "C:\\Users\\User\\Documents\\csd-lens\\android\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.0\\res\\layout\\abc_screen_content_include.xml"
     }
 ]
