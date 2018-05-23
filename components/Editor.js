@@ -146,7 +146,7 @@ export default class Editor extends React.Component {
             height: this.state.height
         });
     }
-
+	
     /**
      * Saves pixels as base pixels
      */
@@ -364,7 +364,7 @@ export default class Editor extends React.Component {
 
             let new_pixels_filter = [];
 
-            if (f_angle !== 0 && f_angle !== 180 && f_angle !== 90 && f_angle !== 270 && f_angle !== 360) {
+            if (f_angle % 90 !== 0) {
                 let weights = [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9];
                 let side = Math.round(Math.sqrt(weights.length));
                 let halfSide = Math.floor(side / 2);
@@ -800,8 +800,6 @@ export default class Editor extends React.Component {
                 newHeight: res[2],
                 bokehX2: res[1],
                 bokehY2: res[2],
-            });
-            this.setState({
                 imageSource: {uri: response.uri},
                 baseSource: {uri: response.uri},
                 loadingBar: null,
@@ -1519,6 +1517,7 @@ export default class Editor extends React.Component {
      */
     handleImageTouch(e) {
 
+		//Retouch tool
         if (this.state.panelIndex === 5) {
             this.setState({
                 wasChanged: true,
@@ -1529,8 +1528,6 @@ export default class Editor extends React.Component {
             let k = (this.state.width / this.state.height > this.state.imageContainer.width / this.state.imageContainer.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
             let retouchX = Math.round(e.nativeEvent.locationX * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0)),
                 retouchY = Math.round(e.nativeEvent.locationY * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
-
-            console.log(k, this.state.width, this.state.imageContainer.width, this.state.height, this.state.imageContainer.height);
 
             this.setState({
                 retouchCircle: <View style={[styles.retouchCircle, {
