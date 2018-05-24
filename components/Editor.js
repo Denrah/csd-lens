@@ -151,7 +151,7 @@ export default class Editor extends React.Component {
             height: this.state.height
         });
     }
-	
+
     /**
      * Saves pixels as base pixels
      */
@@ -805,13 +805,8 @@ export default class Editor extends React.Component {
                 newHeight: res[2],
                 bokehX2: res[1],
                 bokehY2: res[2],
-<<<<<<< HEAD
                 imageResizeX: res[1]/2,
                 imageResizeY: res[2]/2,
-            });
-            this.setState({
-=======
->>>>>>> 6034a2e7875bcd4338f25b9a04174a492f4e3ee1
                 imageSource: {uri: response.uri},
                 baseSource: {uri: response.uri},
                 loadingBar: null,
@@ -958,6 +953,9 @@ export default class Editor extends React.Component {
                         s2: {x: 0, y: 0},
                         s3: {x: 0, y: 0}
                     },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
                     panelIndex: 1
                 }, () => {
                     this.drawDots()
@@ -1025,6 +1023,9 @@ export default class Editor extends React.Component {
                         s2: {x: 0, y: 0},
                         s3: {x: 0, y: 0}
                     },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
                     panelIndex: 3
                 }, () => {
                     this.drawDots()
@@ -1042,6 +1043,9 @@ export default class Editor extends React.Component {
                         retouch: "white",
                         bokeh: "white"
                     },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
                     panelIndex: 4
                 });
                 if (this.state.imageMode === "cover")
@@ -1075,6 +1079,9 @@ export default class Editor extends React.Component {
                         s2: {x: 0, y: 0},
                         s3: {x: 0, y: 0}
                     },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
                     panelIndex: 5
                 }, () => {
                     this.drawDots()
@@ -1110,6 +1117,9 @@ export default class Editor extends React.Component {
                         s2: {x: 0, y: 0},
                         s3: {x: 0, y: 0}
                     },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
                     panelIndex: 6
                 }, () => {
                     this.drawDots()
@@ -1529,7 +1539,6 @@ export default class Editor extends React.Component {
      */
     handleImageTouch(e) {
 
-<<<<<<< HEAD
         if(this.state.panelIndex === 2)
         {
             let k = (this.state.width / this.state.height > this.state.imageContainer.width / this.state.imageContainer.height) ? parseFloat(this.state.width / this.state.imageContainer.width) : parseFloat(this.state.height / this.state.imageContainer.height);
@@ -1547,9 +1556,7 @@ export default class Editor extends React.Component {
             });
         }
 
-=======
 		//Retouch tool
->>>>>>> 6034a2e7875bcd4338f25b9a04174a492f4e3ee1
         if (this.state.panelIndex === 5) {
             this.setState({
                 wasChanged: true,
@@ -1561,10 +1568,6 @@ export default class Editor extends React.Component {
             let retouchX = Math.round(e.nativeEvent.locationX * k - Math.max((this.state.imageContainer.width * k - this.state.width) / 2, 0)),
                 retouchY = Math.round(e.nativeEvent.locationY * k - Math.max((this.state.imageContainer.height * k - this.state.height) / 2, 0));
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 6034a2e7875bcd4338f25b9a04174a492f4e3ee1
             this.setState({
                 retouchCircle: <View style={[styles.retouchCircle, {
                     left: e.nativeEvent.locationX - this.state.retouchRadius - 1,
