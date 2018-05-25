@@ -1308,6 +1308,7 @@ export default class Editor extends React.Component {
         this.setState({
             bokehAmount: amount,
             loadingBar: loadingBar,
+			wasChanged: true,
         }, () => {
             setTimeout(() => {
                 imageUtils.getOpenCVBokehFromPixels(amount * 2 + 1, this.state.basePixels, this.state.width, this.state.height,

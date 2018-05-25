@@ -141,8 +141,12 @@ let getOpenCVBokehFromPixels = async function (amount, pixels, width, height, x1
         res = data;
     });
 	
-	sound.stop();
-	sound.play();
+	AsyncStorage.getItem('@Lens:volume').then((keyValue) => {
+		if (keyValue === null || keyValue == 1) {
+			sound.stop();
+			sound.play();
+		}
+	});
 
     return res;
 };

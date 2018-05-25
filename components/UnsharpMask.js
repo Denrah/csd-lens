@@ -55,7 +55,7 @@ export default class UnsharpMask extends React.Component {
                     <Slider
                         step={1}
                         minimumValue={0}
-                        maximumValue={100}
+                        maximumValue={10}
                         style={styles.sliderStyle}
                         onValueChange={this.onRadiusChange.bind(this)}
                         thumbTintColor={"#00CF68"}
