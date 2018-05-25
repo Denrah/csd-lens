@@ -62,20 +62,17 @@ class BitmapModule extends ReactContextBaseJavaModule {
         return "Bitmap";
     }
 
+	
     @ReactMethod
     public void getPixelRGBAofImage(final String imageName, final Callback callback) {
         try {
-
             WritableArray res = new WritableNativeArray();
-				
 			Bitmap bitmap = loadImage(imageName);
-			//bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos);
 			int[] pixels = new int[bitmap.getHeight() * bitmap.getWidth()];
             bitmap.getPixels(pixels, 0, (int)bitmap.getWidth(), 0, 0, (int)bitmap.getWidth(), (int)bitmap.getHeight());
 			for(int i = 0; i < pixels.length; i++)
 				res.pushInt(pixels[i]);
 			bitmap.recycle();
-
             callback.invoke(null, res, bitmap.getWidth(), bitmap.getHeight());
         } catch (Exception e) {
             callback.invoke(e.getMessage());
@@ -86,8 +83,9 @@ class BitmapModule extends ReactContextBaseJavaModule {
     public void getBase64FromPixels(ReadableArray pixelsData, int width, int height, final Callback callback) {
         try {
             int[] pixels = new int[width * height];
-            for(int i = 0; i < width*height; i++)
+            for(int i = 0; i < width*height; i++) {
                 pixels[i] = pixelsData.getInt(i);
+			}
             Bitmap.Config conf = Bitmap.Config.ARGB_8888;
             Bitmap image = Bitmap.createBitmap(width, height, conf);
             image.setPixels(pixels, 0, width, 0, 0, width, height);
@@ -105,11 +103,10 @@ class BitmapModule extends ReactContextBaseJavaModule {
     public void getOpenCVBokehFromPixels(int amount, ReadableArray pixelsData, int width, int height, int x1, int y1, int x2, int y2, final Callback callback) {
         try {
 			System.loadLibrary( Core.NATIVE_LIBRARY_NAME );
-		
-		
             int[] pixels = new int[width * height];
-            for(int i = 0; i < width*height; i++)
+            for(int i = 0; i < width*height; i++) {
                 pixels[i] = pixelsData.getInt(i);
+			}
             Bitmap.Config conf = Bitmap.Config.ARGB_8888;
             Bitmap image = Bitmap.createBitmap(width, height, conf);
             image.setPixels(pixels, 0, width, 0, 0, width, height);
@@ -155,7 +152,6 @@ class BitmapModule extends ReactContextBaseJavaModule {
 			
 			Utils.matToBitmap(dst, image);
 			
-
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.PNG, 100, baos);
             byte[] b = baos.toByteArray();
@@ -165,8 +161,9 @@ class BitmapModule extends ReactContextBaseJavaModule {
 			
 			int[] pixels1 = new int[image.getHeight() * image.getWidth()];
             image.getPixels(pixels1, 0, (int)image.getWidth(), 0, 0, (int)image.getWidth(), (int)image.getHeight());
-			for(int i = 0; i < pixels1.length; i++)
+			for(int i = 0; i < pixels1.length; i++) {
 				res.pushInt(pixels1[i]);
+			}
 			image.recycle();
 			
             callback.invoke(null, imageEncoded, res);
@@ -176,8 +173,7 @@ class BitmapModule extends ReactContextBaseJavaModule {
     }
 	
 	private int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-
+        BitmapFactory.Options options, int reqWidth, int reqHeight) {
 		final int height = options.outHeight;
 		final int width = options.outWidth;
 		int inSampleSize = 1;
@@ -248,7 +244,6 @@ class BitmapModule extends ReactContextBaseJavaModule {
 			
             int[] pixels = new int[width * height];		
 			
-
 			JSONArray data = new JSONArray(text.toString());
             for(int i = 0; i < width*height; i++)
                 pixels[i] = Integer.parseInt(data.optString(i));			

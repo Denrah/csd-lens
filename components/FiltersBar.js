@@ -24,7 +24,7 @@ export default class FiltersBar extends React.Component {
                 paddingLeft: 15,
                 paddingRight: 15
             }}>
-                <TouchableOpacity onPress={() => this.invokeCallback("gray")} style={{paddingRight: 15}}>
+                <TouchableOpacity onPress={() => this.invokeCallback("grayscale")} style={{paddingRight: 15}}>
                     <ImageBackground style={{
                         width: 70, height: 70, alignItems: 'center',
                         justifyContent: 'center',
@@ -48,7 +48,7 @@ export default class FiltersBar extends React.Component {
                         }}>SEPIA</Text>
                     </ImageBackground>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => this.invokeCallback("noir")} style={{paddingRight: 15}}>
+                <TouchableOpacity onPress={() => this.invokeCallback("threshold")} style={{paddingRight: 15}}>
                     <ImageBackground style={{
                         width: 70, height: 70, alignItems: 'center',
                         justifyContent: 'center',
@@ -72,7 +72,7 @@ export default class FiltersBar extends React.Component {
                         }}>SHARP</Text>
                     </ImageBackground>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => this.invokeCallback("back")} style={{paddingRight: 15}}>
+                <TouchableOpacity onPress={() => this.invokeCallback("invert")} style={{paddingRight: 15}}>
                     <ImageBackground style={{
                         width: 70, height: 70, alignItems: 'center',
                         justifyContent: 'center',
@@ -96,7 +96,7 @@ export default class FiltersBar extends React.Component {
                         }}>EMBOSS</Text>
                     </ImageBackground>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => this.invokeCallback("edge")} style={{paddingRight: 15}}>
+                <TouchableOpacity onPress={() => this.invokeCallback("edgeDetection")} style={{paddingRight: 15}}>
                     <ImageBackground style={{
                         width: 70, height: 70, alignItems: 'center',
                         justifyContent: 'center',

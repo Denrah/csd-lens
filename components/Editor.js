@@ -148,6 +148,49 @@ export default class Editor extends React.Component {
         this.savePixels = this.savePixels.bind(this);
         this.savePicture = this.savePicture.bind(this);		
     }
+	
+	/**
+     * Invoked immediately after a component is mounted.
+     */
+    componentDidMount() {
+		AsyncStorage.getItem('@Lens:volume').then((keyValue) => {
+			if (keyValue !== null) {
+				this.setState({volume: keyValue});
+				this.props.navigation.setParams({ volumeColor: (keyValue == 1) ? "#00CF68" : "#FFF" });
+			}
+		});
+        this.props.navigation.setParams({
+            setResizeMode: this.setResizeMode,
+            savePicture: this.savePicture,
+            resizeImage: require('../assets/ui/full_size.png'),
+			setVolume: this.setVolume,
+			volumeColor: "#00CF68"
+        });
+        this.choosePanel("filter");
+        const {params} = this.props.navigation.state;
+        response = params.response;
+
+        this.setState({
+            loadingBar: loadingBar
+        });
+        imageUtils.getPixelsArray(response.path).then(res => {
+            this.setState({
+                pixels: res[0],
+                basePixels: res[0],
+                width: res[1],
+                height: res[2],
+                newWidth: res[1],
+                newHeight: res[2],
+                bokehX2: res[1],
+                bokehY2: res[2],
+                imageResizeX: res[1]/2,
+                imageResizeY: res[2]/2,
+                imageSource: {uri: response.uri},
+                baseSource: {uri: response.uri},
+                loadingBar: null,
+            });
+        });
+    }
 
     /**
      * Opens save image page
@@ -222,9 +265,120 @@ export default class Editor extends React.Component {
             this.setState({imageMode: "contain"});
             this.props.navigation.setParams({resizeImage: require('../assets/ui/full_size.png')});
         }
+    }   
+
+    /**
+     * Implementing image filtering using convolution matrix
+     * @param weights
+     * @param pixelsData
+     * @param width
+     * @param height
+     * @returns {*}
+     */
+    convolution(weights, pixelsData, width, height) {
+        let new_pixels = [];
+        this.setState({
+            loadingBar: loadingBar
+        }, () => {
+
+        });
+        if (weights.length === 1) {
+            return pixelsData;
+        }
+        let side = Math.round(Math.sqrt(weights.length));
+        let halfSide = Math.floor(side / 2);
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let r = 0, g = 0, b = 0, a = 0;
+                for (let cy = 0; cy < side; cy++) {
+                    for (let cx = 0; cx < side; cx++) {
+                        let scy = y + cy - halfSide;
+                        let scx = x + cx - halfSide;
+                        if (scy >= 0 && scy < height && scx >= 0 && scx < width) {
+                            let srcOff = (scy * width + scx);
+                            let wt = weights[cy * side + cx];
+                            r += imageUtils.toColorArr(pixelsData[srcOff])[0] * wt;
+                            g += imageUtils.toColorArr(pixelsData[srcOff])[1] * wt;
+                            b += imageUtils.toColorArr(pixelsData[srcOff])[2] * wt;
+                            a += imageUtils.toColorArr(pixelsData[srcOff])[3] * wt;
+                        }
+                    }
+                }
+                let new_colors = [r, g, b, 1];
+                new_colors = imageUtils.normalaizeColors(new_colors);
+                new_pixels[y * width + x] = imageUtils.RGBToInt(new_colors);
+            }
+        }
+        return new_pixels;
     }
 
     /**
+     * Implementing unsharp mask effect
+     * @param radius
+     * @param amount
+     * @param threshold
+     */
+    unsharpMask(radius, amount, threshold) {
+        this.setState({
+            loadingBar: loadingBar,
+            wasChanged: true,
+        }, () => {
+            setTimeout(() => {
+                radius = radius * 2 + 1;
+                let weights = new Array(radius * radius);
+                let halfSide = Math.floor(radius / 2);
+                let sigma = halfSide;
+                let sum = 0;
+                for (let y = 0; y < radius; y++) {
+                    for (let x = 0; x < radius; x++) {
+                        let nx = x - halfSide;
+                        let ny = y - halfSide;
+                        let w = (1 / (2 * Math.PI * sigma * sigma)) * Math.exp(-(nx * nx + ny * ny) / (2 * sigma * sigma));
+                        let offset = y * radius + x;
+                        weights[offset] = w;
+                        sum += w;
+                    }
+                }
+                for (let i = 0; i < weights.length; i++) {
+                    weights[i] /= sum;
+                }
+
+
+                let blured_pixels = this.convolution(weights, this.state.basePixels, this.state.width, this.state.height);
+
+                let new_pixels = [];
+
+                for (let i = 0; i < this.state.width * this.state.height; i++) {
+                    let orig_luminosity = (imageUtils.toColorArr(this.state.basePixels[i])[0] + imageUtils.toColorArr(this.state.basePixels[i])[1] + imageUtils.toColorArr(this.state.basePixels[i])[2]) / 3;
+                    let blured_luminosity = (imageUtils.toColorArr(blured_pixels[i])[0] + imageUtils.toColorArr(blured_pixels[i])[1] + imageUtils.toColorArr(blured_pixels[i])[2]) / 3;
+                    let diff = orig_luminosity - blured_luminosity;
+
+                    if (Math.abs(2 * diff) > threshold) {
+                        let colors = imageUtils.toColorArr(this.state.basePixels[i]);
+                        colors[0] += amount * diff;
+                        colors[1] += amount * diff;
+                        colors[2] += amount * diff;
+                        colors = imageUtils.normalaizeColors(colors);
+                        new_pixels[i] = imageUtils.RGBToInt(colors);
+                    }
+                    else {
+                        new_pixels[i] = this.state.basePixels[i];
+                    }
+                }
+                this.setState({
+                    pixels: new_pixels
+                });
+                imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+                    this.setState({
+                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                        loadingBar: null
+                    });
+                });
+            }, 10);
+        });
+    }
+	
+	/**
      * Implements sepia effect
      */
     sepia() {
@@ -355,9 +509,170 @@ export default class Editor extends React.Component {
                 });
             });
         });
+    }   
+
+    /**
+     * Canceling all filter effects
+     */
+    norm() {
+        this.setState({
+            loadingBar: loadingBar
+        }, () => {
+            setTimeout(() => {
+                this.setState({
+                    pixels: this.state.basePixels
+                });
+                imageUtils.getBase64FromPixels(this.state.basePixels, this.state.width, this.state.height).then(res => {
+                    this.setState({
+                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                        loadingBar: null
+                    });
+                });
+            });
+        });
+    }
+	
+
+    /**
+     * Implementing sharpness filter
+     */
+    sharp() {
+        this.setState({
+            wasChanged: true,
+            loadingBar: loadingBar
+        }, () => {
+            setTimeout(() => {
+                let new_pixels = this.convolution([-1, -1, -1,
+                    -1, 9, -1,
+                    -1, -1, -1], this.state.basePixels, this.state.width, this.state.height);
+
+
+                this.setState({
+                    pixels: new_pixels
+                });
+                imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+                    this.setState({
+                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                        loadingBar: null
+                    });
+                });
+            });
+        });
+
     }
 
     /**
+     * Implementing edge detection filter
+     */
+    edgeDetection() {
+        this.setState({
+            wasChanged: true,
+            loadingBar: loadingBar
+        }, () => {
+            setTimeout(() => {
+                let new_pixels = this.convolution([0, 1, 0,
+                    1, -4, 1,
+                    0, 1, 0], this.state.basePixels, this.state.width, this.state.height);
+
+
+                this.setState({
+                    pixels: new_pixels
+                });
+                imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+                    this.setState({
+                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                        loadingBar: null
+                    });
+                });
+            });
+        });
+    }
+
+    /**
+     * Implementing emboss filter
+     */
+    emboss() {
+        this.setState({
+            wasChanged: true,
+            loadingBar: loadingBar
+        }, () => {
+            setTimeout(() => {
+                let new_pixels = this.convolution([0, 1, 0,
+                    1, 0, -1,
+                    0, -1, 0], this.state.basePixels, this.state.width, this.state.height);
+
+                for (let i = 0; i < this.state.width * this.state.height; i++) {
+
+                    let colors = imageUtils.toColorArr(new_pixels[i]);
+                    colors[0] += 128;
+                    colors[1] += 128;
+                    colors[2] += 128;
+                    colors = imageUtils.normalaizeColors(colors);
+                    new_pixels[i] = imageUtils.RGBToInt(colors);
+
+                }
+
+                this.setState({
+                    pixels: new_pixels
+                });
+                imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+                    this.setState({
+                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                        loadingBar: null
+                    });
+                });
+            });
+        });
+    }
+
+    /**
+     * Implementing sobel filter
+     * @returns {Promise<void>}
+     */
+    async sobel() {
+        this.setState({
+            wasChanged: true,
+            loadingBar: loadingBar
+        }, () => {
+            setTimeout(() => {
+                let new_pixels = this.convolution([-1, 0, 1,
+                    -2, 0, 2,
+                    -1, 0, 1], this.state.basePixels, this.state.width, this.state.height);
+                this.setState({
+                    pixels: new_pixels
+                }, () => {
+                    setTimeout(() => {
+                        new_pixels = this.convolution([-1, 0, 1,
+                            -2, 0, 2,
+                            -1, 0, 1], new_pixels, this.state.width, this.state.height);
+
+                        this.setState({
+                            pixels: new_pixels
+                        });
+                        imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
+                            this.setState({
+                                imageSource: {uri: 'data:image/jpeg;base64,' + res},
+                                loadingBar: null
+                            });
+                        });
+                    }, 10);
+                });
+            });
+        });
+    }
+
+    /**
+     * Callback function for filters tab
+     * @param val
+     */
+    filterCallback(val) {
+        this.setState({
+            wasChanged: true,
+        });
+		this[val]();
+    }
+	
+	/**
      * Rotating image on given angle
      * @param angle
      */
@@ -544,349 +859,6 @@ export default class Editor extends React.Component {
     }
 
     /**
-     * Canceling all filter effects
-     */
-    norm() {
-        this.setState({
-            loadingBar: loadingBar
-        }, () => {
-            setTimeout(() => {
-                this.setState({
-                    pixels: this.state.basePixels
-                });
-                imageUtils.getBase64FromPixels(this.state.basePixels, this.state.width, this.state.height).then(res => {
-                    this.setState({
-                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                        loadingBar: null
-                    });
-                });
-            });
-        });
-    }
-
-    /**
-     * Implementing image filtering using convolution matrix
-     * @param weights
-     * @param pixelsData
-     * @param width
-     * @param height
-     * @returns {*}
-     */
-    convolution(weights, pixelsData, width, height) {
-        let new_pixels = [];
-        this.setState({
-            loadingBar: loadingBar
-        }, () => {
-
-        });
-        if (weights.length === 1) {
-            return pixelsData;
-        }
-        let side = Math.round(Math.sqrt(weights.length));
-        let halfSide = Math.floor(side / 2);
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                let r = 0, g = 0, b = 0, a = 0;
-                for (let cy = 0; cy < side; cy++) {
-                    for (let cx = 0; cx < side; cx++) {
-                        let scy = y + cy - halfSide;
-                        let scx = x + cx - halfSide;
-                        if (scy >= 0 && scy < height && scx >= 0 && scx < width) {
-                            let srcOff = (scy * width + scx);
-                            let wt = weights[cy * side + cx];
-                            r += imageUtils.toColorArr(pixelsData[srcOff])[0] * wt;
-                            g += imageUtils.toColorArr(pixelsData[srcOff])[1] * wt;
-                            b += imageUtils.toColorArr(pixelsData[srcOff])[2] * wt;
-                            a += imageUtils.toColorArr(pixelsData[srcOff])[3] * wt;
-                        }
-                    }
-                }
-                let new_colors = [r, g, b, 1];
-                new_colors = imageUtils.normalaizeColors(new_colors);
-                new_pixels[y * width + x] = imageUtils.RGBToInt(new_colors);
-            }
-        }
-        return new_pixels;
-    }
-
-    /**
-     * Implementing unsharp mask effect
-     * @param radius
-     * @param amount
-     * @param threshold
-     */
-    unsharpMask(radius, amount, threshold) {
-        this.setState({
-            loadingBar: loadingBar,
-            wasChanged: true,
-        }, () => {
-            setTimeout(() => {
-                radius = radius * 2 + 1;
-                let weights = new Array(radius * radius);
-                let halfSide = Math.floor(radius / 2);
-                let sigma = halfSide;
-                let sum = 0;
-                for (let y = 0; y < radius; y++) {
-                    for (let x = 0; x < radius; x++) {
-                        let nx = x - halfSide;
-                        let ny = y - halfSide;
-                        let w = (1 / (2 * Math.PI * sigma * sigma)) * Math.exp(-(nx * nx + ny * ny) / (2 * sigma * sigma));
-                        let offset = y * radius + x;
-                        weights[offset] = w;
-                        sum += w;
-                    }
-                }
-                for (let i = 0; i < weights.length; i++) {
-                    weights[i] /= sum;
-                }
-
-
-                let blured_pixels = this.convolution(weights, this.state.basePixels, this.state.width, this.state.height);
-
-                let new_pixels = [];
-
-                for (let i = 0; i < this.state.width * this.state.height; i++) {
-                    let orig_luminosity = (imageUtils.toColorArr(this.state.basePixels[i])[0] + imageUtils.toColorArr(this.state.basePixels[i])[1] + imageUtils.toColorArr(this.state.basePixels[i])[2]) / 3;
-                    let blured_luminosity = (imageUtils.toColorArr(blured_pixels[i])[0] + imageUtils.toColorArr(blured_pixels[i])[1] + imageUtils.toColorArr(blured_pixels[i])[2]) / 3;
-                    let diff = orig_luminosity - blured_luminosity;
-
-                    if (Math.abs(2 * diff) > threshold) {
-                        let colors = imageUtils.toColorArr(this.state.basePixels[i]);
-                        colors[0] += amount * diff;
-                        colors[1] += amount * diff;
-                        colors[2] += amount * diff;
-                        colors = imageUtils.normalaizeColors(colors);
-                        new_pixels[i] = imageUtils.RGBToInt(colors);
-                    }
-                    else {
-                        new_pixels[i] = this.state.basePixels[i];
-                    }
-                }
-                this.setState({
-                    pixels: new_pixels
-                });
-                imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
-                    this.setState({
-                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                        loadingBar: null
-                    });
-                });
-            }, 10);
-        });
-    }
-
-    /**
-     * Implementing sharpness filter
-     */
-    sharp() {
-        this.setState({
-            wasChanged: true,
-            loadingBar: loadingBar
-        }, () => {
-            setTimeout(() => {
-                let new_pixels = this.convolution([-1, -1, -1,
-                    -1, 9, -1,
-                    -1, -1, -1], this.state.basePixels, this.state.width, this.state.height);
-
-
-                this.setState({
-                    pixels: new_pixels
-                });
-                imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
-                    this.setState({
-                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                        loadingBar: null
-                    });
-                });
-            });
-        });
-
-    }
-
-    /**
-     * Implementing edge detection filter
-     */
-    edgeDetection() {
-        this.setState({
-            wasChanged: true,
-            loadingBar: loadingBar
-        }, () => {
-            setTimeout(() => {
-                let new_pixels = this.convolution([0, 1, 0,
-                    1, -4, 1,
-                    0, 1, 0], this.state.basePixels, this.state.width, this.state.height);
-
-
-                this.setState({
-                    pixels: new_pixels
-                });
-                imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
-                    this.setState({
-                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                        loadingBar: null
-                    });
-                });
-            });
-        });
-    }
-
-    /**
-     * Implementing emboss filter
-     */
-    emboss() {
-        this.setState({
-            wasChanged: true,
-            loadingBar: loadingBar
-        }, () => {
-            setTimeout(() => {
-                let new_pixels = this.convolution([0, 1, 0,
-                    1, 0, -1,
-                    0, -1, 0], this.state.basePixels, this.state.width, this.state.height);
-
-                for (let i = 0; i < this.state.width * this.state.height; i++) {
-
-                    let colors = imageUtils.toColorArr(new_pixels[i]);
-                    colors[0] += 128;
-                    colors[1] += 128;
-                    colors[2] += 128;
-                    colors = imageUtils.normalaizeColors(colors);
-                    new_pixels[i] = imageUtils.RGBToInt(colors);
-
-                }
-
-                this.setState({
-                    pixels: new_pixels
-                });
-                imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
-                    this.setState({
-                        imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                        loadingBar: null
-                    });
-                });
-            });
-        });
-    }
-
-    /**
-     * Implementing sobel filter
-     * @returns {Promise<void>}
-     */
-    async sobel() {
-        this.setState({
-            wasChanged: true,
-            loadingBar: loadingBar
-        }, () => {
-            setTimeout(() => {
-                let new_pixels = this.convolution([-1, 0, 1,
-                    -2, 0, 2,
-                    -1, 0, 1], this.state.basePixels, this.state.width, this.state.height);
-                this.setState({
-                    pixels: new_pixels
-                }, () => {
-                    setTimeout(() => {
-                        new_pixels = this.convolution([-1, 0, 1,
-                            -2, 0, 2,
-                            -1, 0, 1], new_pixels, this.state.width, this.state.height);
-
-                        this.setState({
-                            pixels: new_pixels
-                        });
-                        imageUtils.getBase64FromPixels(new_pixels, this.state.width, this.state.height).then(res => {
-                            this.setState({
-                                imageSource: {uri: 'data:image/jpeg;base64,' + res},
-                                loadingBar: null
-                            });
-                        });
-                    }, 10);
-                });
-            });
-        });
-    }
-
-    /**
-     * Invoked immediately after a component is mounted.
-     */
-    componentDidMount() {
-		AsyncStorage.getItem('@Lens:volume').then((keyValue) => {
-			if (keyValue !== null) {
-				this.setState({volume: keyValue});
-				this.props.navigation.setParams({ volumeColor: (keyValue == 1) ? "#00CF68" : "#FFF" });
-			}
-		});
-        this.props.navigation.setParams({
-            setResizeMode: this.setResizeMode,
-            savePicture: this.savePicture,
-            resizeImage: require('../assets/ui/full_size.png'),
-			setVolume: this.setVolume,
-			volumeColor: "#00CF68"
-        });
-        this.choosePanel("filter");
-        const {params} = this.props.navigation.state;
-        response = params.response;
-
-        this.setState({
-            loadingBar: loadingBar
-        });
-        imageUtils.getPixelsArray(response.path).then(res => {
-            this.setState({
-                pixels: res[0],
-                basePixels: res[0],
-                width: res[1],
-                height: res[2],
-                newWidth: res[1],
-                newHeight: res[2],
-                bokehX2: res[1],
-                bokehY2: res[2],
-                imageResizeX: res[1]/2,
-                imageResizeY: res[2]/2,
-                imageSource: {uri: response.uri},
-                baseSource: {uri: response.uri},
-                loadingBar: null,
-            });
-        });
-    }
-
-    /**
-     * Callback function for filters tab
-     * @param val
-     */
-    filterCallback(val) {
-        this.setState({
-            wasChanged: true,
-        });
-        switch (val) {
-            case "gray":
-                this.grayscale();
-                break;
-            case "sepia":
-                this.sepia();
-                break;
-            case "noir":
-                this.threshold();
-                break;
-            case "sharp":
-                this.sharp();
-                break;
-            case "back":
-                this.invert();
-                break;
-            case "norm":
-                this.norm();
-                break;
-            case "edge":
-                this.edgeDetection();
-                break;
-            case "emboss":
-                this.emboss();
-                break;
-            case "sobel":
-                this.sobel();
-                break;
-
-        }
-    }
-
-    /**
      * Callback function for size and rotation tab
      * @param size
      * @param rot
@@ -904,308 +876,8 @@ export default class Editor extends React.Component {
             }, 10);
         });
     }
-
-    /**
-     * Callback function for linear filtration tab
-     * @param type
-     */
-    linearFiltration(type) {
-        switch (type) {
-            case "set":
-                this.setState({
-                    loadingBar: loadingBar,
-                    wasChanged: true,
-                }, () => {
-                    setTimeout(() => {
-                        this.dotsToImageCoordinates();
-                    }, 10);
-                });
-                break;
-            case "clear":
-                this.setState({
-                    currentPanel: <LinearFiltration dotsCount={0} callbackFunction={this.linearFiltration.bind(this)}/>,
-                    transformDots: {
-                        count: 0,
-                        f1: {x: -10, y: 0},
-                        f2: {x: -10, y: 0},
-                        f3: {x: -10, y: 0},
-                        s1: {x: -10, y: 0},
-                        s2: {x: -10, y: 0},
-                        s3: {x: -10, y: 0}
-                    },
-                    transformDotsCoordinates: {
-                        f1: {x: 0, y: 0},
-                        f2: {x: 0, y: 0},
-                        f3: {x: 0, y: 0},
-                        s1: {x: 0, y: 0},
-                        s2: {x: 0, y: 0},
-                        s3: {x: 0, y: 0}
-                    }
-                }, () => {
-                    this.drawDots()
-                });
-                break;
-        }
-    }
-
-    /**
-     * Function to change tools panels
-     * @param panel
-     */
-    choosePanel(panel) {
-        this.setState({
-            imageSource: this.state.baseSource
-        });
-        switch (panel) {
-            case "filter":
-                this.setState({
-                    currentPanel: <FiltersBar callbackFunction={this.filterCallback.bind(this)}/>,
-                    navigationColors: {
-                        filters: "#00CF68",
-                        sizeAndRot: "white",
-                        unsharpMask: "white",
-                        linearFiltration: "white",
-                        retouch: "white",
-                        bokeh: "white",
-                    },
-                    transformDots: {
-                        count: 0,
-                        f1: {x: -10, y: 0},
-                        f2: {x: -10, y: 0},
-                        f3: {x: -10, y: 0},
-                        s1: {x: -10, y: 0},
-                        s2: {x: -10, y: 0},
-                        s3: {x: -10, y: 0}
-                    },
-                    transformDotsCoordinates: {
-                        f1: {x: 0, y: 0},
-                        f2: {x: 0, y: 0},
-                        f3: {x: 0, y: 0},
-                        s1: {x: 0, y: 0},
-                        s2: {x: 0, y: 0},
-                        s3: {x: 0, y: 0}
-                    },
-                    resizeDot: null,
-                    imageResizeX: this.state.width/2,
-                    imageResizeY: this.state.height/2,
-                    panelIndex: 1
-                }, () => {
-                    this.drawDots()
-                });
-
-                break;
-            case "size":
-                this.setState({
-                    currentPanel: <SizeAndRot callbackFunction={this.sizeAndRotCallback.bind(this)}/>,
-                    navigationColors: {
-                        filters: "white",
-                        sizeAndRot: "#00CF68",
-                        unsharpMask: "white",
-                        linearFiltration: "white",
-                        retouch: "white",
-                        bokeh: "white"
-                    },
-                    transformDots: {
-                        count: 0,
-                        f1: {x: -10, y: 0},
-                        f2: {x: -10, y: 0},
-                        f3: {x: -10, y: 0},
-                        s1: {x: -10, y: 0},
-                        s2: {x: -10, y: 0},
-                        s3: {x: -10, y: 0}
-                    },
-                    transformDotsCoordinates: {
-                        f1: {x: 0, y: 0},
-                        f2: {x: 0, y: 0},
-                        f3: {x: 0, y: 0},
-                        s1: {x: 0, y: 0},
-                        s2: {x: 0, y: 0},
-                        s3: {x: 0, y: 0}
-                    },
-                    panelIndex: 2
-                }, () => {
-                    this.drawDots()
-                });
-                break;
-            case "usm":
-                this.setState({
-                    currentPanel: <UnsharpMask callbackFunction={this.unsharpMask.bind(this)}/>,
-                    navigationColors: {
-                        filters: "white",
-                        sizeAndRot: "white",
-                        unsharpMask: "#00CF68",
-                        linearFiltration: "white",
-                        retouch: "white",
-                        bokeh: "white",
-                    },
-                    transformDots: {
-                        count: 0,
-                        f1: {x: -10, y: 0},
-                        f2: {x: -10, y: 0},
-                        f3: {x: -10, y: 0},
-                        s1: {x: -10, y: 0},
-                        s2: {x: -10, y: 0},
-                        s3: {x: -10, y: 0}
-                    },
-                    transformDotsCoordinates: {
-                        f1: {x: 0, y: 0},
-                        f2: {x: 0, y: 0},
-                        f3: {x: 0, y: 0},
-                        s1: {x: 0, y: 0},
-                        s2: {x: 0, y: 0},
-                        s3: {x: 0, y: 0}
-                    },
-                    resizeDot: null,
-                    imageResizeX: this.state.width/2,
-                    imageResizeY: this.state.height/2,
-                    panelIndex: 3
-                }, () => {
-                    this.drawDots()
-                });
-                break;
-            case "lin":
-                this.setState({
-                    currentPanel: <LinearFiltration dotsCount={this.state.transformDots.count}
-                                                    callbackFunction={this.linearFiltration.bind(this)}/>,
-                    navigationColors: {
-                        filters: "white",
-                        sizeAndRot: "white",
-                        unsharpMask: "white",
-                        linearFiltration: "#00CF68",
-                        retouch: "white",
-                        bokeh: "white"
-                    },
-                    resizeDot: null,
-                    imageResizeX: this.state.width/2,
-                    imageResizeY: this.state.height/2,
-                    panelIndex: 4
-                });
-                if (this.state.imageMode === "cover")
-                    this.setResizeMode();
-                break;
-            case "reto":
-                this.setState({
-                    currentPanel: <Retouch callbackFunction={this.retouchCallback.bind(this)}/>,
-                    navigationColors: {
-                        filters: "white",
-                        sizeAndRot: "white",
-                        unsharpMask: "white",
-                        linearFiltration: "white",
-                        retouch: "#00CF68",
-                        bokeh: "white"
-                    },
-                    transformDots: {
-                        count: 0,
-                        f1: {x: -10, y: 0},
-                        f2: {x: -10, y: 0},
-                        f3: {x: -10, y: 0},
-                        s1: {x: -10, y: 0},
-                        s2: {x: -10, y: 0},
-                        s3: {x: -10, y: 0}
-                    },
-                    transformDotsCoordinates: {
-                        f1: {x: 0, y: 0},
-                        f2: {x: 0, y: 0},
-                        f3: {x: 0, y: 0},
-                        s1: {x: 0, y: 0},
-                        s2: {x: 0, y: 0},
-                        s3: {x: 0, y: 0}
-                    },
-                    resizeDot: null,
-                    imageResizeX: this.state.width/2,
-                    imageResizeY: this.state.height/2,
-                    panelIndex: 5
-                }, () => {
-                    this.drawDots()
-                });
-                if (this.state.imageMode === "cover")
-                    this.setResizeMode();
-                break;
-            case "bokeh":
-                this.setState({
-                    currentPanel: <Bokeh callbackFunction={this.bokehCallback.bind(this)}/>,
-                    navigationColors: {
-                        filters: "white",
-                        sizeAndRot: "white",
-                        unsharpMask: "white",
-                        linearFiltration: "white",
-                        retouch: "white",
-                        bokeh: "#00CF68",
-                    },
-                    transformDots: {
-                        count: 0,
-                        f1: {x: -10, y: 0},
-                        f2: {x: -10, y: 0},
-                        f3: {x: -10, y: 0},
-                        s1: {x: -10, y: 0},
-                        s2: {x: -10, y: 0},
-                        s3: {x: -10, y: 0}
-                    },
-                    transformDotsCoordinates: {
-                        f1: {x: 0, y: 0},
-                        f2: {x: 0, y: 0},
-                        f3: {x: 0, y: 0},
-                        s1: {x: 0, y: 0},
-                        s2: {x: 0, y: 0},
-                        s3: {x: 0, y: 0}
-                    },
-                    resizeDot: null,
-                    imageResizeX: this.state.width/2,
-                    imageResizeY: this.state.height/2,
-                    panelIndex: 6
-                }, () => {
-                    this.drawDots()
-                });
-                if (this.state.imageMode === "cover")
-                    this.setResizeMode();
-                break;
-
-        }
-    }
-
-    /**
-     * Function to show base dots in linear filtration tool
-     */
-    drawDots() {
-        this.setState({
-            drawableDots: (
-                <View style={{position: "absolute", top: 0, bottom: 0, left: 0, right: 0}}>
-                    <View style={[styles.circle, {
-                        backgroundColor: '#00CF68',
-                        left: this.state.transformDots.f1.x - 2,
-                        top: this.state.transformDots.f1.y - 2
-                    }]}/>
-                    <View style={[styles.circle, {
-                        backgroundColor: '#00CF68',
-                        left: this.state.transformDots.f2.x - 2,
-                        top: this.state.transformDots.f2.y - 2
-                    }]}/>
-                    <View style={[styles.circle, {
-                        backgroundColor: '#00CF68',
-                        left: this.state.transformDots.f3.x - 2,
-                        top: this.state.transformDots.f3.y - 2
-                    }]}/>
-                    <View style={[styles.circle, {
-                        backgroundColor: 'red',
-                        left: this.state.transformDots.s1.x - 2,
-                        top: this.state.transformDots.s1.y - 2
-                    }]}/>
-                    <View style={[styles.circle, {
-                        backgroundColor: 'red',
-                        left: this.state.transformDots.s2.x - 2,
-                        top: this.state.transformDots.s2.y - 2
-                    }]}/>
-                    <View style={[styles.circle, {
-                        backgroundColor: 'red',
-                        left: this.state.transformDots.s3.x - 2,
-                        top: this.state.transformDots.s3.y - 2
-                    }]}/>
-                </View>
-            )
-        });
-    }
-
-    /**
+	
+	/**
      * Implementing bilinear filtration method
      * @param npX
      * @param npY
@@ -1386,6 +1058,91 @@ export default class Editor extends React.Component {
     }
 
     /**
+     * Callback function for linear filtration tab
+     * @param type
+     */
+    linearFiltration(type) {
+        switch (type) {
+            case "set":
+                this.setState({
+                    loadingBar: loadingBar,
+                    wasChanged: true,
+                }, () => {
+                    setTimeout(() => {
+                        this.dotsToImageCoordinates();
+                    }, 10);
+                });
+                break;
+            case "clear":
+                this.setState({
+                    currentPanel: <LinearFiltration dotsCount={0} callbackFunction={this.linearFiltration.bind(this)}/>,
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    }
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+        }
+    }    
+
+    /**
+     * Function to show base dots in linear filtration tool
+     */
+    drawDots() {
+        this.setState({
+            drawableDots: (
+                <View style={{position: "absolute", top: 0, bottom: 0, left: 0, right: 0}}>
+                    <View style={[styles.circle, {
+                        backgroundColor: '#00CF68',
+                        left: this.state.transformDots.f1.x - 2,
+                        top: this.state.transformDots.f1.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: '#00CF68',
+                        left: this.state.transformDots.f2.x - 2,
+                        top: this.state.transformDots.f2.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: '#00CF68',
+                        left: this.state.transformDots.f3.x - 2,
+                        top: this.state.transformDots.f3.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: 'red',
+                        left: this.state.transformDots.s1.x - 2,
+                        top: this.state.transformDots.s1.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: 'red',
+                        left: this.state.transformDots.s2.x - 2,
+                        top: this.state.transformDots.s2.y - 2
+                    }]}/>
+                    <View style={[styles.circle, {
+                        backgroundColor: 'red',
+                        left: this.state.transformDots.s3.x - 2,
+                        top: this.state.transformDots.s3.y - 2
+                    }]}/>
+                </View>
+            )
+        });
+    }  
+
+    /**
      * Implementing affine transformations method
      */
     dotsToImageCoordinates() {
@@ -1564,6 +1321,7 @@ export default class Editor extends React.Component {
             }, 10);
         });
     }
+	
 
     /**
      * Handle user touches on imagebox
@@ -1802,6 +1560,221 @@ export default class Editor extends React.Component {
         this.setState({
             currentPanel: <LinearFiltration dotsCount={tmp.count} callbackFunction={this.linearFiltration.bind(this)}/>,
         });
+    }
+	
+	/**
+     * Function to change tools panels
+     * @param panel
+     */
+    choosePanel(panel) {
+        this.setState({
+            imageSource: this.state.baseSource
+        });
+        switch (panel) {
+            case "filter":
+                this.setState({
+                    currentPanel: <FiltersBar callbackFunction={this.filterCallback.bind(this)}/>,
+                    navigationColors: {
+                        filters: "#00CF68",
+                        sizeAndRot: "white",
+                        unsharpMask: "white",
+                        linearFiltration: "white",
+                        retouch: "white",
+                        bokeh: "white",
+                    },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
+                    panelIndex: 1
+                }, () => {
+                    this.drawDots()
+                });
+
+                break;
+            case "size":
+                this.setState({
+                    currentPanel: <SizeAndRot callbackFunction={this.sizeAndRotCallback.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "#00CF68",
+                        unsharpMask: "white",
+                        linearFiltration: "white",
+                        retouch: "white",
+                        bokeh: "white"
+                    },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    },
+                    panelIndex: 2
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+            case "usm":
+                this.setState({
+                    currentPanel: <UnsharpMask callbackFunction={this.unsharpMask.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "white",
+                        unsharpMask: "#00CF68",
+                        linearFiltration: "white",
+                        retouch: "white",
+                        bokeh: "white",
+                    },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
+                    panelIndex: 3
+                }, () => {
+                    this.drawDots()
+                });
+                break;
+            case "lin":
+                this.setState({
+                    currentPanel: <LinearFiltration dotsCount={this.state.transformDots.count}
+                                                    callbackFunction={this.linearFiltration.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "white",
+                        unsharpMask: "white",
+                        linearFiltration: "#00CF68",
+                        retouch: "white",
+                        bokeh: "white"
+                    },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
+                    panelIndex: 4
+                });
+                if (this.state.imageMode === "cover")
+                    this.setResizeMode();
+                break;
+            case "reto":
+                this.setState({
+                    currentPanel: <Retouch callbackFunction={this.retouchCallback.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "white",
+                        unsharpMask: "white",
+                        linearFiltration: "white",
+                        retouch: "#00CF68",
+                        bokeh: "white"
+                    },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
+                    panelIndex: 5
+                }, () => {
+                    this.drawDots()
+                });
+                if (this.state.imageMode === "cover")
+                    this.setResizeMode();
+                break;
+            case "bokeh":
+                this.setState({
+                    currentPanel: <Bokeh callbackFunction={this.bokehCallback.bind(this)}/>,
+                    navigationColors: {
+                        filters: "white",
+                        sizeAndRot: "white",
+                        unsharpMask: "white",
+                        linearFiltration: "white",
+                        retouch: "white",
+                        bokeh: "#00CF68",
+                    },
+                    transformDots: {
+                        count: 0,
+                        f1: {x: -10, y: 0},
+                        f2: {x: -10, y: 0},
+                        f3: {x: -10, y: 0},
+                        s1: {x: -10, y: 0},
+                        s2: {x: -10, y: 0},
+                        s3: {x: -10, y: 0}
+                    },
+                    transformDotsCoordinates: {
+                        f1: {x: 0, y: 0},
+                        f2: {x: 0, y: 0},
+                        f3: {x: 0, y: 0},
+                        s1: {x: 0, y: 0},
+                        s2: {x: 0, y: 0},
+                        s3: {x: 0, y: 0}
+                    },
+                    resizeDot: null,
+                    imageResizeX: this.state.width/2,
+                    imageResizeY: this.state.height/2,
+                    panelIndex: 6
+                }, () => {
+                    this.drawDots()
+                });
+                if (this.state.imageMode === "cover")
+                    this.setResizeMode();
+                break;
+
+        }
     }
 
     /**
