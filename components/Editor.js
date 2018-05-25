@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
     View,
+	AsyncStorage,
 } from 'react-native';
 import FiltersBar from "./FiltersBar";
 import SizeAndRot from "./SizeAndRot";
@@ -44,7 +45,13 @@ export default class Editor extends React.Component {
             headerRight: (
                 <View
                     style={{width: 120, flex: 1, flexDirection: 'row', alignItems: "center", justifyContent: "center"}}>
-                    <TouchableOpacity onPress={params.setResizeMode}>
+                    <TouchableOpacity onPress={params.setVolume}>
+                        <Image style={{
+                            width: 28, height: 28, marginRight: 10
+						}} tintColor={params.volumeColor} source={require('../assets/ui/sound.png')}>
+                        </Image>
+                    </TouchableOpacity>
+					<TouchableOpacity onPress={params.setResizeMode}>
                         <Image style={{
                             width: 30, height: 30, marginRight: 10
                         }} source={params.resizeImage}>
@@ -132,12 +139,14 @@ export default class Editor extends React.Component {
             resizeY: 0,
             imageResizeX: 0,
             imageResizeY: 0,
-            resizeDot: null
+            resizeDot: null,
+			volume: 1
         };
         this.choosePanel = this.choosePanel.bind(this);
         this.setResizeMode = this.setResizeMode.bind(this);
+		this.setVolume = this.setVolume.bind(this);
         this.savePixels = this.savePixels.bind(this);
-        this.savePicture = this.savePicture.bind(this);
+        this.savePicture = this.savePicture.bind(this);		
     }
 
     /**
@@ -178,6 +187,21 @@ export default class Editor extends React.Component {
             bokehRect: null,
             pixels: this.state.basePixels
         });
+    }
+	
+	/**
+     * Set volume
+     */
+    setVolume() {
+		AsyncStorage.setItem('@Lens:volume', ((parseInt(this.state.volume) + 1) % 2).toString());
+        if (this.state.volume == 1) {
+            this.setState({volume: 0});
+            this.props.navigation.setParams({volumeColor: "#FFF"});
+        }
+        else {
+            this.setState({volume: 1});
+            this.props.navigation.setParams({volumeColor: "#00CF68"});
+        }
     }
 
     /**
@@ -783,10 +807,18 @@ export default class Editor extends React.Component {
      * Invoked immediately after a component is mounted.
      */
     componentDidMount() {
+		AsyncStorage.getItem('@Lens:volume').then((keyValue) => {
+			if (keyValue !== null) {
+				this.setState({volume: keyValue});
+				this.props.navigation.setParams({ volumeColor: (keyValue == 1) ? "#00CF68" : "#FFF" });
+			}
+		});
         this.props.navigation.setParams({
             setResizeMode: this.setResizeMode,
             savePicture: this.savePicture,
-            resizeImage: require('../assets/ui/full_size.png')
+            resizeImage: require('../assets/ui/full_size.png'),
+			setVolume: this.setVolume,
+			volumeColor: "#00CF68"
         });
         this.choosePanel("filter");
         const {params} = this.props.navigation.state;

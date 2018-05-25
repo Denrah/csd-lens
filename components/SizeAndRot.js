@@ -41,6 +41,7 @@ export default class SizeAndRot extends React.Component {
                     <Slider
                         step={1}
                         maximumValue={200}
+						minimumValue={1}
                         value={100}
                         style={styles.sliderStyle}
                         onValueChange={this.onSizeChange.bind(this)}

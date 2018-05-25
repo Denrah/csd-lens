@@ -1,7 +1,11 @@
 import React from 'react';
-import {NativeModules} from 'react-native';
+import {NativeModules, AsyncStorage} from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import Sound from 'react-native-sound';
+
+let sound = new Sound('done.wav', Sound.MAIN_BUNDLE);
+sound.setVolume(0.5);
+
 
 /**
  * Saves result image to file in storage
@@ -11,10 +15,6 @@ import Sound from 'react-native-sound';
  * @param height
  * @returns {Promise<*>}
  */
-
-let sound = new Sound('done.wav', Sound.MAIN_BUNDLE).setVolume(0.5);
-
- 
 let savePixelsToFile = async function (name, pixels, width, height) {
     let res;
     await new Promise((resolve, reject) => {
@@ -104,9 +104,13 @@ let getBase64FromPixels = async function (pixels, width, height, path = false) {
     }).then(function (data) {
         res = data;
     });
+	AsyncStorage.getItem('@Lens:volume').then((keyValue) => {
+		if (keyValue === null || keyValue == 1) {
+			sound.stop();
+			sound.play();
+		}
+	});
 	
-	sound.stop();
-	sound.play();
 	
     return res;
 };
